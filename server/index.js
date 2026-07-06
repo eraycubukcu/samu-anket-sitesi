@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import surveyRoute from "./routes/surveyRoute.js";
+import responseRoute from "./routes/responseRoute.js";
 
 dotenv.config();
 connectDB();
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/surveys", surveyRoute);
+app.use("/api/responses", responseRoute);
 
 const PORT = 5000 | process.env.PORT;
 
