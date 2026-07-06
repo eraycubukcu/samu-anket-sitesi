@@ -1,0 +1,15 @@
+#Bağımlılıklar
+node_modules/
+#Ortam Değişkenleri
+.env
+#Log Dosyaları
+*.log
+#İşletim sistemi dosyaları
+.DS_Store
+Thumbs.db
+#IDE dosyaları
+.vscode/
+.idea/
+#Build çıktıları
+dist/
+build/
