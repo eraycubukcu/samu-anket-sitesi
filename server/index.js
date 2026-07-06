@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
+import surveyRoute from "./routes/surveyRoute.js";
 
 dotenv.config();
 connectDB();
@@ -13,6 +14,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({ mesaj: "Samsun Üniversitesi Anket API çalışıyor." });
 });
+
+app.use("/api/surveys", surveyRoute);
 
 const PORT = 5000 | process.env.PORT;
 

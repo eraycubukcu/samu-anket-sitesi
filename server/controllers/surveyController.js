@@ -1,4 +1,4 @@
-import Survey from "./models/Survey.js";
+import Survey from "../models/Survey.js";
 
 export const createSurvey = async (req, res) => {
   try {
