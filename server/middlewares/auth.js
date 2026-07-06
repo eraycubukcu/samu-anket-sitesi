@@ -1,14 +1,34 @@
+import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// clerk token'ı doğru ve kullanıcı bul/oluştur
+// admin için
+export const requireAdmin = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ mesaj: "Admin girişi gerekli" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ mesaj: "Admin yetkisi gerekli" });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ mesaj: "Geçersiz token" });
+  }
+};
+
+// student için
 export const requireAuth = async (req, res, next) => {
   try {
-    console.log(
-      "Gelen headers:",
-      req.headers["x-clerk-user-id"],
-      req.headers["x-clerk-user-email"],
-    );
-
     const clerkId = req.headers["x-clerk-user-id"];
     const email = req.headers["x-clerk-user-email"];
     const firstName = req.headers["x-clerk-user-firstname"] || "";
@@ -26,25 +46,14 @@ export const requireAuth = async (req, res, next) => {
         email,
         firstName,
         lastName,
+        role: "student",
       });
-      console.log(`Yeni kullanıcı oluşturuldu: ${email}`);
+      console.log(`Yeni öğrenci oluşturuldu: ${email}`);
     }
 
     req.user = user;
     next();
   } catch (error) {
-    res
-      .status(500)
-      .json({ mesaj: "Yetkilendirme hatası", hata: error.message });
+    res.status(500).json({ mesaj: "Yetkilendirme hatası", hata: error.message });
   }
-};
-
-// sadece admin için
-export const requireAdmin = (req, res, next) => {
-  if (req.user.role !== "admin")
-    return res
-      .status(403)
-      .json({ mesaj: "Bu işlem için admin yetkisi gerekli" });
-
-  next();
 };

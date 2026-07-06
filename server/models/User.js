@@ -2,6 +2,15 @@ import mongoose from "mongoose";
 
 const userSchema = mongoose.Schema(
   {
+    // admin için userName ve password
+    userName: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    password: {
+      type: String,
+    },
     clerkId: {
       type: String,
       required: true,
@@ -39,4 +48,8 @@ User Model
   - lastName
   - role : default Student
   - createdAt , updatedAt ( timestamps )
+*/
+
+/* 
+userName ve password Admin girişi için eklendi.
 */

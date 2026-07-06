@@ -13,12 +13,13 @@ const router = express.Router();
 
 // student routes
 router.get("/active", requireAuth, getActiveSurveys);
-router.get("/:id", requireAuth, getSurveyById);
+router.get("/student/:id", requireAuth, getSurveyById);
 
 // admin routes
-router.get("/", requireAuth, requireAdmin, getAllSurveys);
-router.post("/", requireAuth, requireAdmin, createSurvey);
-router.put("/:id", requireAuth, requireAdmin, updateSurvey);
-router.delete("/:id", requireAuth, requireAdmin, deleteSurvey);
+router.get("/", requireAdmin, getAllSurveys);
+router.get("/:id", requireAdmin, getSurveyById);
+router.post("/",  requireAdmin, createSurvey);
+router.put("/:id", requireAdmin, updateSurvey);
+router.delete("/:id", requireAdmin, deleteSurvey);
 
 export default router;

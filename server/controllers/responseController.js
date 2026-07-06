@@ -1,7 +1,7 @@
 import Response from "../models/Response.js";
 import Survey from "../models/Survey.js";
 
-export const submitForm = async (req, res) => {
+export const submitResponse = async (req, res) => {
   try {
     const { surveyId, answers } = req.body;
 
