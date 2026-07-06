@@ -35,3 +35,14 @@ const responseSchema = mongoose.Schema(
 responseSchema.index({ surver: 1, user: 1 }, { required: true });
 
 export default mongoose.model("Response", responseSchema);
+
+/* 
+Response
+  - Survey : hangi anket olduğu
+  - User : hangi user olduğu
+  - answers : answerSchema bilgileri
+
+Answer Schema
+  - questionId 
+  - answer
+*/
