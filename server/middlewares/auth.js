@@ -3,6 +3,12 @@ import User from "../models/User.js";
 // clerk token'ı doğru ve kullanıcı bul/oluştur
 export const requireAuth = async (req, res, next) => {
   try {
+    console.log(
+      "Gelen headers:",
+      req.headers["x-clerk-user-id"],
+      req.headers["x-clerk-user-email"],
+    );
+
     const clerkId = req.headers["x-clerk-user-id"];
     const email = req.headers["x-clerk-user-email"];
     const firstName = req.headers["x-clerk-user-firstname"] || "";
@@ -12,7 +18,7 @@ export const requireAuth = async (req, res, next) => {
       return res.status(401).json({ mesaj: "Giriş yapmanız gerekiyor" });
     }
 
-    let user = await User.findOne({ clerkId });
+    let user = await User.findOne({ $or: [{ clerkId }, { email }] });
 
     if (!user) {
       user = await User.create({
@@ -27,7 +33,9 @@ export const requireAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    res.status(500).json({ mesaj: "Yetkilendirme hatası", hata: error.message });
+    res
+      .status(500)
+      .json({ mesaj: "Yetkilendirme hatası", hata: error.message });
   }
 };
 

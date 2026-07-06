@@ -16,9 +16,9 @@ router.get("/active", requireAuth, getActiveSurveys);
 router.get("/:id", requireAuth, getSurveyById);
 
 // admin routes
-router.get("/", requireAdmin, requireAuth, getAllSurveys);
-router.post("/", requireAdmin, requireAuth, createSurvey);
-router.put("/:id", requireAdmin, requireAuth, updateSurvey);
-router.delete("/:id", requireAdmin, requireAuth, deleteSurvey);
+router.get("/", requireAuth, requireAdmin, getAllSurveys);
+router.post("/", requireAuth, requireAdmin, createSurvey);
+router.put("/:id", requireAuth, requireAdmin, updateSurvey);
+router.delete("/:id", requireAuth, requireAdmin, deleteSurvey);
 
 export default router;

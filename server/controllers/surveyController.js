@@ -2,12 +2,12 @@ import Survey from "../models/Survey.js";
 
 export const createSurvey = async (req, res) => {
   try {
-    const survey = await Survey.crete({
+    const survey = await Survey.create({
       ...req.body,
       createdBy: req.user._id,
     });
     res.status(201).json(survey);
-  } catch (err) {
+  } catch (error) {
     res
       .status(400)
       .json({ message: "Anket oluşturulamadı.", hata: error.message });

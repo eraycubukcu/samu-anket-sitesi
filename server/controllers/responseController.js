@@ -6,7 +6,7 @@ export const submitForm = async (req, res) => {
     const { surveyId, answers } = req.body;
 
     // anket var mı ve aktif mi
-    const survey = await Survey.find(surveyId);
+    const survey = await Survey.findById(surveyId);
 
     if (!survey) return res.status(404).json({ message: "Anket bulunamadı." });
 
