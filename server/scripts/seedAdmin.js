@@ -8,7 +8,7 @@ dotenv.config();
 
 const seedAdmin = async () => {
   try {
-    await mongoose.connection(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDb bağlantısı başarılı.");
 
     // admin var mı

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const userSchema = mongoose.Schema(
   {
     // admin için userName ve password
-    userName: {
+    username: {
       type: String,
       unique: true,
       sparse: true,
@@ -13,7 +13,7 @@ const userSchema = mongoose.Schema(
     },
     clerkId: {
       type: String,
-      required: true,
+      sparse: true,
       unique: true,
     },
     email: {
