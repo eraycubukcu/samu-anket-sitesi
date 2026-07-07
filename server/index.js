@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import surveyRoute from "./routes/surveyRoute.js";
 import responseRoute from "./routes/responseRoute.js";
 import adminRoute from "./routes/adminRoute.js";
+import { clerkAuth } from "./middlewares/auth.js";
 
 dotenv.config();
 connectDB();
@@ -12,6 +13,7 @@ connectDB();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(clerkAuth);
 
 app.get("/", (req, res) => {
   res.json({ mesaj: "Samsun Üniversitesi Anket API çalışıyor." });
