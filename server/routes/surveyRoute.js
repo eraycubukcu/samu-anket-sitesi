@@ -5,6 +5,7 @@ import {
   getActiveSurveys,
   getAllSurveys,
   getSurveyById,
+  getSurveyForStudent,
   updateSurvey,
 } from "../controllers/surveyController.js";
 import { requireAuth, requireAdmin } from "../middlewares/auth.js";
@@ -13,7 +14,7 @@ const router = express.Router();
 
 // student routes
 router.get("/active", requireAuth, getActiveSurveys);
-router.get("/student/:id", requireAuth, getSurveyById);
+router.get("/student/:id", requireAuth, getSurveyForStudent);
 
 // admin routes
 router.get("/", requireAdmin, getAllSurveys);

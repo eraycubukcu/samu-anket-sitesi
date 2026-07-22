@@ -57,6 +57,30 @@ export const getSurveyById = async (req, res) => {
   }
 };
 
+// Öğrenci tarafı: anket sadece aktif ve zaman penceresi içindeyse görünür.
+// Bu sayede henüz açılmamış/süresi dolmuş bir anketin soruları ID bilinerek
+// önceden görüntülenemez.
+export const getSurveyForStudent = async (req, res) => {
+  try {
+    const now = new Date();
+    const survey = await Survey.findOne({
+      _id: req.params.id,
+      isActive: true,
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    });
+
+    if (!survey)
+      return res
+        .status(404)
+        .json({ message: "Anket bulunamadı veya şu anda aktif değil." });
+
+    res.json(survey);
+  } catch (error) {
+    res.status(400).json({ message: "Geçersiz anket kimliği." });
+  }
+};
+
 export const deleteSurvey = async (req, res) => {
   const session = await mongoose.startSession();
   try {
@@ -80,9 +104,21 @@ export const deleteSurvey = async (req, res) => {
 
 export const updateSurvey = async (req, res) => {
   try {
+    const fields = pickSurveyFields(req.body);
+
+    if (Object.prototype.hasOwnProperty.call(fields, "questions")) {
+      const hasResponses = await Response.exists({ survey: req.params.id });
+      if (hasResponses) {
+        return res.status(400).json({
+          message:
+            "Bu ankete ait cevaplar zaten var, sorular artık düzenlenemez.",
+        });
+      }
+    }
+
     const survey = await Survey.findByIdAndUpdate(
       req.params.id,
-      pickSurveyFields(req.body),
+      fields,
       {
         new: true, // güncellenmiş halini gönderir
         runValidators: true, // güncelleme sırasında şemasını kurallarını kontrol eder
