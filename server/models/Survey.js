@@ -14,6 +14,19 @@ const questionSchema = mongoose.Schema({
   options: {
     type: [String],
     default: [],
+    validate: {
+      validator: function (opts) {
+        if (this.questionType === "radio" || this.questionType === "checkbox") {
+          return (
+            Array.isArray(opts) &&
+            opts.filter((o) => typeof o === "string" && o.trim()).length >= 2
+          );
+        }
+        return true;
+      },
+      message:
+        "Radio/checkbox soruları için en az 2 dolu seçenek girilmelidir.",
+    },
   },
   required: {
     type: Boolean,

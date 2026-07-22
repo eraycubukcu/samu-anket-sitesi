@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import Survey from "../models/Survey.js";
+import Response from "../models/Response.js";
 
 // Admin isteğinden sadece izin verilen alanlar alınır (mass-assignment koruması).
 // Body'de bulunmayan alanlar sonuca dahil edilmez ki kısmi update (ör. sadece
@@ -56,12 +58,23 @@ export const getSurveyById = async (req, res) => {
 };
 
 export const deleteSurvey = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
-    const survey = await Survey.findByIdAndDelete(req.params.id);
+    let survey;
+    await session.withTransaction(async () => {
+      survey = await Survey.findByIdAndDelete(req.params.id).session(session);
+      if (!survey) return;
+      // Anket silinince ona ait cevaplar da silinir, yetim kayıt kalmaz
+      await Response.deleteMany({ survey: survey._id }).session(session);
+    });
+
     if (!survey) return res.status(404).json({ message: "Anket bulunamadı." });
     res.json(survey);
   } catch (error) {
-    res.status(400).json({ message: "Geçersiz anket kimliği." });
+    console.error(error);
+    res.status(400).json({ message: "Anket silinemedi." });
+  } finally {
+    session.endSession();
   }
 };
 

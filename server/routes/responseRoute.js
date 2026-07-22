@@ -4,6 +4,7 @@ import {
   submitResponse,
   getSurveyResults,
   getMyResponses,
+  exportSurveyResults,
 } from "../controllers/responseController.js";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get("/my", requireAuth, getMyResponses);
 
 // admin routes
 router.get("/survey/:surveyId", requireAdmin, getSurveyResults);
+router.get("/survey/:surveyId/export", requireAdmin, exportSurveyResults);
 
 export default router;
