@@ -32,7 +32,7 @@ const responseSchema = mongoose.Schema(
 );
 
 // Bir öğrenci aynı ankete iki kere cevap veremesin
-responseSchema.index({ surver: 1, user: 1 }, { required: true });
+responseSchema.index({ survey: 1, user: 1 }, { unique: true });
 
 export default mongoose.model("Response", responseSchema);
 

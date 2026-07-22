@@ -35,6 +35,7 @@ export const getDashboardStats = async (req, res) => {
       recentSurveys: surveysWithCounts,
     });
   } catch (error) {
-    res.status(500).json({ mesaj: "İstatistikler getirilemedi", hata: error.message });
+    console.error(error);
+    res.status(500).json({ mesaj: "İstatistikler getirilemedi" });
   }
 };

@@ -50,8 +50,20 @@ export const requireAuth = async (req, res, next) => {
         },
       });
 
+      if (!response.ok) {
+        return res
+          .status(502)
+          .json({ mesaj: "Kullanıcı bilgileri Clerk'ten alınamadı" });
+      }
+
       const clerkUser = await response.json();
-      const email = clerkUser.email_addresses[0].email_address;
+      const email = clerkUser.email_addresses?.[0]?.email_address;
+
+      if (!email) {
+        return res
+          .status(400)
+          .json({ mesaj: "Kullanıcının e-posta adresi bulunamadı" });
+      }
 
       // samsun.edu.tr kontrolü
       if (!email.endsWith("@samsun.edu.tr")) {

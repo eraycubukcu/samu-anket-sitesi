@@ -2,29 +2,42 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
+// Kullanıcı bulunamadığında da bcrypt.compare çalıştırılır ki
+// yanıt süresinden kullanıcı adının var olup olmadığı anlaşılmasın.
+const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing-safety", 10);
+
 export const adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password)
-      return res.status({ message: "Kullanıcı adı ve şifre gerekli" });
-
-    const admin = await User.findOne({ username, role: "admin" });
-
-    if (!admin)
+    // Tip kontrolü: obje/array gönderilerek NoSQL injection denemesini engeller
+    if (
+      typeof username !== "string" ||
+      typeof password !== "string" ||
+      !username.trim() ||
+      !password
+    ) {
       return res
         .status(400)
-        .json({ message: "Geçersiz kullanıcı adı veya şifre." });
+        .json({ message: "Kullanıcı adı ve şifre gerekli" });
+    }
 
-    // Şifreyi karşılaştır
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const admin = await User.findOne({
+      username: username.trim(),
+      role: "admin",
+    }).select("+password");
 
-    if (!isMatch)
+    const isMatch = await bcrypt.compare(
+      password,
+      admin?.password || DUMMY_HASH,
+    );
+
+    if (!admin || !isMatch) {
       return res
         .status(401)
-        .json({ message: "Geçersiz kullanıcı adı veya şifre" });
+        .json({ message: "Geçersiz kullanıcı adı veya şifre." });
+    }
 
-    // JWT Token oluştur.
     const token = jwt.sign({ userId: admin._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
@@ -39,6 +52,7 @@ export const adminLogin = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Giriş hatası", hata: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Giriş hatası" });
   }
 };

@@ -5,8 +5,33 @@ export const submitResponse = async (req, res) => {
   try {
     const { surveyId, answers } = req.body;
 
+    if (typeof surveyId !== "string" || !surveyId.trim()) {
+      return res.status(400).json({ message: "Geçersiz anket kimliği." });
+    }
+
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ message: "Cevaplar gerekli." });
+    }
+
+    const validAnswers = answers.every(
+      (a) =>
+        a &&
+        typeof a === "object" &&
+        typeof a.questionId === "string" &&
+        a.answer !== undefined,
+    );
+
+    if (!validAnswers) {
+      return res.status(400).json({ message: "Cevap formatı geçersiz." });
+    }
+
     // anket var mı ve aktif mi
-    const survey = await Survey.findById(surveyId);
+    let survey;
+    try {
+      survey = await Survey.findById(surveyId);
+    } catch {
+      return res.status(400).json({ message: "Geçersiz anket kimliği." });
+    }
 
     if (!survey) return res.status(404).json({ message: "Anket bulunamadı." });
 
@@ -47,9 +72,14 @@ export const submitResponse = async (req, res) => {
 
     res.status(201).json({ message: "Cevaplarınız kaydedildi." });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Cevaplar gönderilemedi", hata: error.message });
+    // Eşzamanlı çift gönderim, unique index tarafından yakalanır
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Bu anketi zaten doldurdunuz." });
+    }
+    console.error(error);
+    res.status(500).json({ message: "Cevaplar gönderilemedi" });
   }
 };
 
@@ -133,9 +163,8 @@ export const getSurveyResults = async (req, res) => {
       responses,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Anket sonuçları getirelemedi.", hata: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Anket sonuçları getirelemedi." });
   }
 };
 
@@ -147,8 +176,7 @@ export const getMyResponses = async (req, res) => {
 
     res.json(responses);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Cevaplar getirilemedi.", hata: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Cevaplar getirilemedi." });
   }
 };

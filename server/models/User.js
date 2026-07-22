@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
+      select: false,
     },
     clerkId: {
       type: String,
