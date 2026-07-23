@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ListChecks,
@@ -48,11 +48,16 @@ export function AdminLayout() {
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader className="p-3">
-          <img
-            src="/kirmizi-logo-yatay.png"
-            alt="Samsun Üniversitesi"
-            className="h-8 w-auto object-contain group-data-[collapsible=icon]:hidden"
-          />
+          <Link
+            to="/admin"
+            className="flex justify-center group-data-[collapsible=icon]:hidden"
+          >
+            <img
+              src="/kirmizi-logo-yatay.png"
+              alt="Samsun Üniversitesi"
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
