@@ -67,15 +67,13 @@ export function SurveyListPage() {
                 )}
               </CardHeader>
               <CardContent>
-                {answered ? (
-                  <Button disabled className="w-full">
-                    Zaten Dolduruldu
-                  </Button>
-                ) : (
-                  <Button className="w-full" render={<Link to={`/anketler/${survey._id}`} />}>
-                    Anketi Doldur
-                  </Button>
-                )}
+                <Button
+                  variant={answered ? "outline" : "default"}
+                  className="w-full"
+                  render={<Link to={`/anketler/${survey._id}`} />}
+                >
+                  {answered ? "Cevabı Düzenle" : "Anketi Doldur"}
+                </Button>
               </CardContent>
             </Card>
           );

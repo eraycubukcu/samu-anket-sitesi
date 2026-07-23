@@ -1,43 +1,105 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { UserButton } from "@clerk/clerk-react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { UserButton, useClerk } from "@clerk/clerk-react";
+import { ClipboardList, ListChecks, LogOut } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/", label: "Anketler", end: true },
-  { to: "/cevaplarim", label: "Cevaplarım", end: false },
+  { to: "/", label: "Anketler", icon: ListChecks, end: true },
+  { to: "/cevaplarim", label: "Cevaplarım", icon: ClipboardList, end: false },
 ];
 
 export function StudentLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useClerk();
+
+  const isActive = (to: string, end: boolean) =>
+    end ? location.pathname === to : location.pathname.startsWith(to);
+
+  const handleLogout = () => {
+    signOut(() => navigate("/giris", { replace: true }));
+  };
+
   return (
-    <div className="min-h-svh flex flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-          <span className="font-semibold">Samsun Üniversitesi Anketler</span>
-          <nav className="flex items-center gap-4">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    "text-sm text-muted-foreground hover:text-foreground transition-colors",
-                    isActive && "text-foreground font-medium",
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="p-3">
+          <Link
+            to="/"
+            className="flex justify-center group-data-[collapsible=icon]:hidden"
+          >
+            <img
+              src="/kirmizi-logo-yatay.png"
+              alt="Samsun Üniversitesi"
+              className="h-8 w-auto object-contain"
+            />
+          </Link>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton
+                      isActive={isActive(item.to, item.end)}
+                      tooltip={item.label}
+                      render={<NavLink to={item.to} />}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton tooltip="Çıkış Yap" onClick={handleLogout}>
+                <LogOut />
+                <span>Çıkış Yap</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="flex items-center justify-between gap-2 border-b px-4 py-3">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+            <span className="text-sm font-medium text-muted-foreground">
+              Samsun Üniversitesi Anketler
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
             <ThemeToggle />
             <UserButton afterSignOutUrl="/giris" />
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
-        <Outlet />
-      </main>
-    </div>
+          </div>
+        </header>
+        <main className="flex-1 px-6 py-8">
+          <div className="mx-auto w-full max-w-3xl">
+            <Outlet />
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

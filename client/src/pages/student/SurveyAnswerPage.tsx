@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/api";
-import type { Answer, Survey } from "@/types";
+import type { Answer, StudentResponse, Survey } from "@/types";
 
 type AnswerValue = string | string[] | number;
 
@@ -29,16 +29,36 @@ export function SurveyAnswerPage() {
     enabled: Boolean(id),
   });
 
+  const myResponsesQuery = useQuery({
+    queryKey: ["responses", "my"],
+    queryFn: async () => (await studentApi.get<StudentResponse[]>("/responses/my")).data,
+  });
+
+  const existingResponse = myResponsesQuery.data?.find((r) => r.survey._id === id);
+
+  useEffect(() => {
+    if (!existingResponse) return;
+    const prefilled: Record<string, AnswerValue> = {};
+    existingResponse.answers.forEach((a) => {
+      prefilled[a.questionId] = a.answer as AnswerValue;
+    });
+    setAnswers(prefilled);
+  }, [existingResponse]);
+
   const submitMutation = useMutation({
     mutationFn: async () => {
       const payload: Answer[] = Object.entries(answers).map(([questionId, answer]) => ({
         questionId,
         answer,
       }));
+
+      if (existingResponse) {
+        return studentApi.put(`/responses/${existingResponse._id}`, { answers: payload });
+      }
       return studentApi.post("/responses", { surveyId: id, answers: payload });
     },
     onSuccess: () => {
-      toast.success("Cevaplarınız kaydedildi.");
+      toast.success(existingResponse ? "Cevaplarınız güncellendi." : "Cevaplarınız kaydedildi.");
       queryClient.invalidateQueries({ queryKey: ["responses", "my"] });
       queryClient.invalidateQueries({ queryKey: ["surveys", "active"] });
       navigate("/");
@@ -111,6 +131,11 @@ export function SurveyAnswerPage() {
         <h1 className="text-2xl font-semibold">{survey.title}</h1>
         {survey.description && (
           <p className="text-sm text-muted-foreground">{survey.description}</p>
+        )}
+        {existingResponse && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Bu anketi daha önce doldurdunuz. Anket süresi bitene kadar cevaplarınızı güncelleyebilirsiniz.
+          </p>
         )}
       </div>
 
@@ -199,7 +224,11 @@ export function SurveyAnswerPage() {
         })}
 
         <Button type="submit" disabled={submitMutation.isPending} className="w-full">
-          {submitMutation.isPending ? "Gönderiliyor..." : "Cevapları Gönder"}
+          {submitMutation.isPending
+            ? "Gönderiliyor..."
+            : existingResponse
+              ? "Cevapları Güncelle"
+              : "Cevapları Gönder"}
         </Button>
       </form>
     </div>

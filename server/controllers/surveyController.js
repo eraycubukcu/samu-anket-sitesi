@@ -104,28 +104,26 @@ export const deleteSurvey = async (req, res) => {
 
 export const updateSurvey = async (req, res) => {
   try {
-    const fields = pickSurveyFields(req.body);
-
-    if (Object.prototype.hasOwnProperty.call(fields, "questions")) {
-      const hasResponses = await Response.exists({ survey: req.params.id });
-      if (hasResponses) {
-        return res.status(400).json({
-          message:
-            "Bu ankete ait cevaplar zaten var, sorular artık düzenlenemez.",
-        });
-      }
+    const existingSurvey = await Survey.findById(req.params.id);
+    if (!existingSurvey) {
+      return res.status(404).json({ message: "Anket bulunamadı." });
     }
 
-    const survey = await Survey.findByIdAndUpdate(
-      req.params.id,
-      fields,
-      {
-        new: true, // güncellenmiş halini gönderir
-        runValidators: true, // güncelleme sırasında şemasını kurallarını kontrol eder
-      },
-    );
+    // Anket, bitiş tarihine kadar güncellenebilir; bitiş tarihi geçtiyse
+    // artık tarihsel bir kayıt olduğu için düzenlemeye kapatılır.
+    if (existingSurvey.endDate && new Date() > existingSurvey.endDate) {
+      return res.status(400).json({
+        message: "Anketin bitiş tarihi geçtiği için artık güncellenemez.",
+      });
+    }
 
-    if (!survey) return res.status(404).json({ message: "Anket bulunamadı." });
+    const fields = pickSurveyFields(req.body);
+
+    const survey = await Survey.findByIdAndUpdate(req.params.id, fields, {
+      new: true, // güncellenmiş halini gönderir
+      runValidators: true, // güncelleme sırasında şemasını kurallarını kontrol eder
+    });
+
     res.json(survey);
   } catch (error) {
     res.status(400).json({ message: "Anket güncellenemedi.", hata: error.message });

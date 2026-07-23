@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SurveyPreviewDialog } from "@/components/admin/SurveyPreviewDialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { Question, QuestionType, Survey } from "@/types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
@@ -75,6 +76,10 @@ export function AdminSurveyFormPage() {
       survey.questions.length > 0 ? survey.questions : [emptyQuestion()],
     );
   }, [surveyQuery.data]);
+
+  const isEnded = Boolean(
+    isEdit && surveyQuery.data?.endDate && new Date(surveyQuery.data.endDate) < new Date(),
+  );
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -192,7 +197,17 @@ export function AdminSurveyFormPage() {
         questions={questions}
       />
 
+      {isEnded && (
+        <Alert variant="destructive">
+          <AlertTitle>Anketin süresi doldu</AlertTitle>
+          <AlertDescription>
+            Bu anketin bitiş tarihi geçtiği için artık düzenlenemez, sadece görüntülenebilir.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        <fieldset disabled={isEnded} className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Genel Bilgiler</CardTitle>
@@ -359,6 +374,7 @@ export function AdminSurveyFormPage() {
         <Button type="submit" disabled={saveMutation.isPending} className="w-full">
           {saveMutation.isPending ? "Kaydediliyor..." : "Kaydet"}
         </Button>
+        </fieldset>
       </form>
     </div>
   );

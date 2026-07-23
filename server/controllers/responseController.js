@@ -40,28 +40,69 @@ const validateAnswer = (question, answerValue) => {
   }
 };
 
+// Cevap listesinin formatını ve ankete uygunluğunu kontrol eder.
+// submitResponse ve updateResponse arasında ortak kullanılır.
+const validateAnswersAgainstSurvey = (survey, answers) => {
+  if (!Array.isArray(answers) || answers.length === 0) {
+    return "Cevaplar gerekli.";
+  }
+
+  const validFormat = answers.every(
+    (a) =>
+      a &&
+      typeof a === "object" &&
+      typeof a.questionId === "string" &&
+      a.answer !== undefined,
+  );
+
+  if (!validFormat) {
+    return "Cevap formatı geçersiz.";
+  }
+
+  const questionIds = new Set(survey.questions.map((q) => q._id.toString()));
+  const hasUnknownQuestion = answers.some((a) => !questionIds.has(a.questionId));
+  if (hasUnknownQuestion) {
+    return "Geçersiz soru içeren cevap gönderildi.";
+  }
+
+  for (const question of survey.questions) {
+    const answerEntry = answers.find(
+      (a) => a.questionId === question._id.toString(),
+    );
+
+    const isEmpty =
+      !answerEntry ||
+      answerEntry.answer === "" ||
+      answerEntry.answer === null ||
+      (Array.isArray(answerEntry.answer) && answerEntry.answer.length === 0);
+
+    if (isEmpty) {
+      if (question.required) {
+        return `"${question.questionText}" sorusu zorunludur`;
+      }
+      continue;
+    }
+
+    const validationError = validateAnswer(question, answerEntry.answer);
+    if (validationError) {
+      return validationError;
+    }
+  }
+
+  return null;
+};
+
+const isSurveyWindowOpen = (survey) => {
+  const now = new Date();
+  return survey.isActive && now >= survey.startDate && now <= survey.endDate;
+};
+
 export const submitResponse = async (req, res) => {
   try {
     const { surveyId, answers } = req.body;
 
     if (typeof surveyId !== "string" || !surveyId.trim()) {
       return res.status(400).json({ message: "Geçersiz anket kimliği." });
-    }
-
-    if (!Array.isArray(answers) || answers.length === 0) {
-      return res.status(400).json({ message: "Cevaplar gerekli." });
-    }
-
-    const validFormat = answers.every(
-      (a) =>
-        a &&
-        typeof a === "object" &&
-        typeof a.questionId === "string" &&
-        a.answer !== undefined,
-    );
-
-    if (!validFormat) {
-      return res.status(400).json({ message: "Cevap formatı geçersiz." });
     }
 
     // anket var mı ve aktif mi
@@ -74,9 +115,7 @@ export const submitResponse = async (req, res) => {
 
     if (!survey) return res.status(404).json({ message: "Anket bulunamadı." });
 
-    const now = new Date();
-
-    if (!survey.isActive || now < survey.startDate || now > survey.endDate)
+    if (!isSurveyWindowOpen(survey))
       return res.status(400).json({ message: "Bu anket şuan aktif değil." });
 
     // daha önce cevap vermiş mi
@@ -88,38 +127,9 @@ export const submitResponse = async (req, res) => {
     if (existingResponse)
       return res.status(400).json({ message: "Bu anketi zaten doldurdunuz." });
 
-    // Ankete ait olmayan bir soruya cevap gönderilmiş mi
-    const questionIds = new Set(survey.questions.map((q) => q._id.toString()));
-    const hasUnknownQuestion = answers.some((a) => !questionIds.has(a.questionId));
-    if (hasUnknownQuestion) {
-      return res.status(400).json({ message: "Geçersiz soru içeren cevap gönderildi." });
-    }
-
-    // Her soru için: zorunluysa dolu mu, doluysa tipine uygun mu
-    for (const question of survey.questions) {
-      const answerEntry = answers.find(
-        (a) => a.questionId === question._id.toString(),
-      );
-
-      const isEmpty =
-        !answerEntry ||
-        answerEntry.answer === "" ||
-        answerEntry.answer === null ||
-        (Array.isArray(answerEntry.answer) && answerEntry.answer.length === 0);
-
-      if (isEmpty) {
-        if (question.required) {
-          return res.status(400).json({
-            mesaj: `"${question.questionText}" sorusu zorunludur`,
-          });
-        }
-        continue;
-      }
-
-      const validationError = validateAnswer(question, answerEntry.answer);
-      if (validationError) {
-        return res.status(400).json({ message: validationError });
-      }
+    const validationError = validateAnswersAgainstSurvey(survey, answers);
+    if (validationError) {
+      return res.status(400).json({ message: validationError });
     }
 
     await Response.create({
@@ -138,6 +148,48 @@ export const submitResponse = async (req, res) => {
     }
     console.error(error);
     res.status(500).json({ message: "Cevaplar gönderilemedi" });
+  }
+};
+
+// Öğrenci, anket süresi bitmeden önce kendi cevabını güncelleyebilir.
+export const updateResponse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { answers } = req.body;
+
+    let response;
+    try {
+      response = await Response.findById(id);
+    } catch {
+      return res.status(400).json({ message: "Geçersiz cevap kimliği." });
+    }
+
+    if (!response) return res.status(404).json({ message: "Cevap bulunamadı." });
+
+    if (response.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Bu cevabı düzenleme yetkiniz yok." });
+    }
+
+    const survey = await Survey.findById(response.survey);
+    if (!survey) return res.status(404).json({ message: "Anket bulunamadı." });
+
+    if (!isSurveyWindowOpen(survey))
+      return res
+        .status(400)
+        .json({ message: "Bu anketin süresi doldu, cevaplar artık düzenlenemez." });
+
+    const validationError = validateAnswersAgainstSurvey(survey, answers);
+    if (validationError) {
+      return res.status(400).json({ message: validationError });
+    }
+
+    response.answers = answers;
+    await response.save();
+
+    res.json({ message: "Cevaplarınız güncellendi." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Cevaplar güncellenemedi." });
   }
 };
 

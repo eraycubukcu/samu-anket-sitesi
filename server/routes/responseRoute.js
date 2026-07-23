@@ -2,6 +2,7 @@ import express from "express";
 import { requireAdmin, requireAuth } from "../middlewares/auth.js";
 import {
   submitResponse,
+  updateResponse,
   getSurveyResults,
   getMyResponses,
   exportSurveyResults,
@@ -11,6 +12,7 @@ const router = express.Router();
 
 // student routes
 router.post("/", requireAuth, submitResponse);
+router.put("/:id", requireAuth, updateResponse);
 router.get("/my", requireAuth, getMyResponses);
 
 // admin routes
