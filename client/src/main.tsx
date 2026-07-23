@@ -26,7 +26,7 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <ClerkProvider publishableKey={clerkPublishableKey}>
+      <ClerkProvider publishableKey={clerkPublishableKey} afterSignOutUrl="/giris">
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
             <App />

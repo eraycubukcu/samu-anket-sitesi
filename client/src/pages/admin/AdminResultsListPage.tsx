@@ -61,6 +61,7 @@ export function AdminResultsListPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    nativeButton={false}
                     render={<Link to={`/admin/anketler/${survey._id}/sonuclar`} />}
                   >
                     <BarChart3 className="size-4" />

@@ -85,13 +85,18 @@ export function StudentLayout() {
         <header className="flex items-center justify-between gap-2 border-b px-4 py-3">
           <div className="flex items-center gap-2">
             <SidebarTrigger />
-            <span className="text-sm font-medium text-muted-foreground">
+            <img
+              src="/kirmizi-logo-yatay.png"
+              alt="Samsun Üniversitesi"
+              className="h-6 w-auto object-contain md:hidden"
+            />
+            <span className="hidden text-sm font-medium text-muted-foreground md:inline">
               Samsun Üniversitesi Anketler
             </span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <UserButton afterSignOutUrl="/giris" />
+            <UserButton />
           </div>
         </header>
         <main className="flex-1 px-6 py-8">

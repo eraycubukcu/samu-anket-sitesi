@@ -40,7 +40,7 @@ export function AdminSurveysPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Anketler</h1>
-        <Button render={<Link to="/admin/anketler/yeni" />}>
+        <Button nativeButton={false} render={<Link to="/admin/anketler/yeni" />}>
           <Plus className="size-4" />
           Yeni Anket
         </Button>
@@ -84,6 +84,7 @@ export function AdminSurveysPage() {
                     variant="ghost"
                     size="icon"
                     title="Sonuçlar"
+                    nativeButton={false}
                     render={<Link to={`/admin/anketler/${survey._id}/sonuclar`} />}
                   >
                     <BarChart3 className="size-4" />
@@ -92,6 +93,7 @@ export function AdminSurveysPage() {
                     variant="ghost"
                     size="icon"
                     title="Düzenle"
+                    nativeButton={false}
                     render={<Link to={`/admin/anketler/${survey._id}/duzenle`} />}
                   >
                     <Pencil className="size-4" />

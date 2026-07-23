@@ -83,7 +83,7 @@ export function SurveyAnswerPage() {
         <p className="text-sm text-destructive">
           Anket bulunamadı veya şu anda aktif değil.
         </p>
-        <Button variant="outline" render={<Link to="/" />}>
+        <Button variant="outline" nativeButton={false} render={<Link to="/" />}>
           Anket listesine dön
         </Button>
       </div>

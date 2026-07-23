@@ -70,6 +70,7 @@ export function SurveyListPage() {
                 <Button
                   variant={answered ? "outline" : "default"}
                   className="w-full"
+                  nativeButton={false}
                   render={<Link to={`/anketler/${survey._id}`} />}
                 >
                   {answered ? "Cevabı Düzenle" : "Anketi Doldur"}
