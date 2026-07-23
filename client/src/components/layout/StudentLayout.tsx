@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -29,6 +30,7 @@ export function StudentLayout() {
                 {item.label}
               </NavLink>
             ))}
+            <ThemeToggle />
             <UserButton afterSignOutUrl="/giris" />
           </nav>
         </div>

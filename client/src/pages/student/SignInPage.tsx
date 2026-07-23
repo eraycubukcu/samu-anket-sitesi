@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SignInPage() {
   const { signIn, isLoaded } = useSignIn();
@@ -25,7 +26,10 @@ export function SignInPage() {
   };
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-muted/30 px-4">
+    <div className="relative flex min-h-svh items-center justify-center bg-muted/30 px-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader className="flex flex-col items-center gap-3 text-center">
           <img

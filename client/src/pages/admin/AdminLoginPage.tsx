@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { adminApi, getErrorMessage, setAdminToken } from "@/lib/api";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AdminLoginPage() {
   const navigate = useNavigate();
@@ -31,7 +32,10 @@ export function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-svh items-center justify-center px-4">
+    <div className="relative flex min-h-svh items-center justify-center px-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Yönetici Girişi</CardTitle>
