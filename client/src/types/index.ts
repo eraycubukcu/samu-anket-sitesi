@@ -28,7 +28,10 @@ export interface Answer {
 
 export interface StudentResponse {
   _id: string;
-  survey: Pick<Survey, "_id" | "title" | "description">;
+  survey: Pick<
+    Survey,
+    "_id" | "title" | "description" | "isActive" | "startDate" | "endDate"
+  >;
   answers: Answer[];
   createdAt: string;
 }
