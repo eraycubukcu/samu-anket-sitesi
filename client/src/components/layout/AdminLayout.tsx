@@ -1,16 +1,42 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  ListChecks,
+  LogOut,
+  PlusCircle,
+  Settings,
+  BarChart3,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { clearAdminToken } from "@/lib/api";
-import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/admin", label: "Panel", end: true },
-  { to: "/admin/anketler", label: "Anketler", end: false },
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin/anketler", label: "Anketler", icon: ListChecks, end: false },
+  { to: "/admin/anketler/yeni", label: "Anket Oluştur", icon: PlusCircle, end: true },
+  { to: "/admin/sonuclar", label: "Sonuçlar", icon: BarChart3, end: false },
+  { to: "/admin/ayarlar", label: "Ayarlar", icon: Settings, end: true },
 ];
 
 export function AdminLayout() {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const isActive = (to: string, end: boolean) =>
+    end ? location.pathname === to : location.pathname.startsWith(to);
 
   const handleLogout = () => {
     clearAdminToken();
@@ -18,36 +44,56 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="min-h-svh flex flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <span className="font-semibold">Admin Paneli</span>
-          <nav className="flex items-center gap-4">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    "text-sm text-muted-foreground hover:text-foreground transition-colors",
-                    isActive && "text-foreground font-medium",
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="size-4" />
-              Çıkış
-            </Button>
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
-        <Outlet />
-      </main>
-    </div>
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="p-3">
+          <img
+            src="/kirmizi-logo-yatay.png"
+            alt="Samsun Üniversitesi"
+            className="h-8 w-auto object-contain group-data-[collapsible=icon]:hidden"
+          />
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton
+                      isActive={isActive(item.to, item.end)}
+                      tooltip={item.label}
+                      render={<NavLink to={item.to} />}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton tooltip="Çıkış" onClick={handleLogout}>
+                <LogOut />
+                <span>Çıkış</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="flex items-center gap-2 border-b px-4 py-3">
+          <SidebarTrigger />
+          <span className="text-sm font-medium text-muted-foreground">Admin Paneli</span>
+        </header>
+        <main className="flex-1 px-6 py-8">
+          <Outlet />
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

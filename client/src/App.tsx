@@ -13,6 +13,8 @@ import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import { AdminSurveysPage } from "@/pages/admin/AdminSurveysPage";
 import { AdminSurveyFormPage } from "@/pages/admin/AdminSurveyFormPage";
 import { AdminSurveyResultsPage } from "@/pages/admin/AdminSurveyResultsPage";
+import { AdminResultsListPage } from "@/pages/admin/AdminResultsListPage";
+import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 function App() {
@@ -42,6 +44,8 @@ function App() {
           <Route path="anketler/yeni" element={<AdminSurveyFormPage />} />
           <Route path="anketler/:id/duzenle" element={<AdminSurveyFormPage />} />
           <Route path="anketler/:id/sonuclar" element={<AdminSurveyResultsPage />} />
+          <Route path="sonuclar" element={<AdminResultsListPage />} />
+          <Route path="ayarlar" element={<AdminSettingsPage />} />
         </Route>
       </Route>
 

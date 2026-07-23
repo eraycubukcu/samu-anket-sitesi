@@ -56,3 +56,35 @@ export const adminLogin = async (req, res) => {
     res.status(500).json({ message: "Giriş hatası" });
   }
 };
+
+export const changeAdminPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (
+      typeof currentPassword !== "string" ||
+      typeof newPassword !== "string" ||
+      !currentPassword ||
+      newPassword.length < 8
+    ) {
+      return res.status(400).json({
+        message: "Mevcut şifre ve en az 8 karakterli yeni şifre gerekli.",
+      });
+    }
+
+    const admin = await User.findById(req.user._id).select("+password");
+    const isMatch = await bcrypt.compare(currentPassword, admin.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Mevcut şifre yanlış." });
+    }
+
+    admin.password = await bcrypt.hash(newPassword, 10);
+    await admin.save();
+
+    res.json({ message: "Şifre güncellendi." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Şifre güncellenemedi." });
+  }
+};

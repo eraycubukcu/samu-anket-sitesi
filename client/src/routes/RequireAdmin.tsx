@@ -1,10 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getAdminToken } from "@/lib/api";
+import { clearAdminToken, isAdminTokenValid } from "@/lib/api";
 
 export function RequireAdmin() {
-  const token = getAdminToken();
-
-  if (!token) {
+  if (!isAdminTokenValid()) {
+    clearAdminToken();
     return <Navigate to="/admin/login" replace />;
   }
 

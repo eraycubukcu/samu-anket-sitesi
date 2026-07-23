@@ -9,6 +9,22 @@ export const setAdminToken = (token: string) =>
   localStorage.setItem(ADMIN_TOKEN_KEY, token);
 export const clearAdminToken = () => localStorage.removeItem(ADMIN_TOKEN_KEY);
 
+// Token'ın imzasını doğrulamaz (buna gerek yok, backend zaten her istekte
+// doğruluyor) - sadece bozuk/süresi dolmuş bir token'ın admin arayüzünü
+// gereksiz yere göstermesini engeller.
+export const isAdminTokenValid = () => {
+  const token = getAdminToken();
+  if (!token) return false;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (!payload.exp) return false;
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+};
+
 // Admin JWT ile korunan uçlar için: token otomatik eklenir, 401'de oturum temizlenip
 // giriş sayfasına yönlendirilir.
 export const adminApi = axios.create({ baseURL });
