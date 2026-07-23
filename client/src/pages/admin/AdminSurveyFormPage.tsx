@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Eye, Plus, Trash2 } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SurveyPreviewDialog } from "@/components/admin/SurveyPreviewDialog";
 import type { Question, QuestionType, Survey } from "@/types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
@@ -55,6 +56,7 @@ export function AdminSurveyFormPage() {
   const [examDateLocal, setExamDateLocal] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([emptyQuestion()]);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const surveyQuery = useQuery({
     queryKey: ["admin", "survey", id],
@@ -172,9 +174,23 @@ export function AdminSurveyFormPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">
-        {isEdit ? "Anketi Düzenle" : "Yeni Anket"}
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">
+          {isEdit ? "Anketi Düzenle" : "Yeni Anket"}
+        </h1>
+        <Button type="button" variant="outline" onClick={() => setPreviewOpen(true)}>
+          <Eye className="size-4" />
+          Önizle
+        </Button>
+      </div>
+
+      <SurveyPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={title}
+        description={description}
+        questions={questions}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>

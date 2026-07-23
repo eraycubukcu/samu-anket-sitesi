@@ -79,18 +79,17 @@ const surveySchema = mongoose.Schema(
 
 // examDate her set edildiğinde/değiştiğinde açılış-kapanış otomatik hesaplanır:
 // sınavdan 10 dk önce açılır, sınav gününün (TR saatiyle) 23:59'unda kapanır.
-surveySchema.pre("validate", function (next) {
+surveySchema.pre("validate", function () {
   if (this.examDate && this.isModified("examDate")) {
     const { startDate, endDate } = computeSurveyWindow(this.examDate);
     this.startDate = startDate;
     this.endDate = endDate;
   }
-  next();
 });
 
 // findByIdAndUpdate/findOneAndUpdate "save" hook'larını tetiklemediği için
 // aynı hesaplama update yolunda da ayrıca uygulanır.
-surveySchema.pre("findOneAndUpdate", function (next) {
+surveySchema.pre("findOneAndUpdate", function () {
   const update = this.getUpdate() || {};
   const examDate = update.examDate ?? update.$set?.examDate;
 
@@ -100,8 +99,6 @@ surveySchema.pre("findOneAndUpdate", function (next) {
     update.$set.startDate = startDate;
     update.$set.endDate = endDate;
   }
-
-  next();
 });
 
 export default mongoose.model("Survey", surveySchema);
