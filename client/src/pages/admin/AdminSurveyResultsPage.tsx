@@ -1,13 +1,27 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SurveyResults } from "@/types";
+
+function BackButton() {
+  const navigate = useNavigate();
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => navigate(-1)}
+    >
+      <ArrowLeft className="size-4" />
+      Geri
+    </Button>
+  );
+}
 
 export function AdminSurveyResultsPage() {
   const { id } = useParams<{ id: string }>();
@@ -42,7 +56,8 @@ export function AdminSurveyResultsPage() {
 
   if (resultsQuery.isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="mx-auto max-w-3xl space-y-4">
+        <BackButton />
         <Skeleton className="h-8 w-1/2" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -50,13 +65,20 @@ export function AdminSurveyResultsPage() {
   }
 
   if (resultsQuery.isError || !resultsQuery.data) {
-    return <p className="text-sm text-destructive">Sonuçlar yüklenemedi.</p>;
+    return (
+      <div className="mx-auto max-w-3xl space-y-4">
+        <BackButton />
+        <p className="text-sm text-destructive">Sonuçlar yüklenemedi.</p>
+      </div>
+    );
   }
 
   const results = resultsQuery.data;
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
+      <BackButton />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{results.survey}</h1>

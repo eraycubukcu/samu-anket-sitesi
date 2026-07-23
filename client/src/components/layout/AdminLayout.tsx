@@ -91,7 +91,9 @@ export function AdminLayout() {
           <span className="text-sm font-medium text-muted-foreground">Admin Paneli</span>
         </header>
         <main className="flex-1 px-6 py-8">
-          <Outlet />
+          <div className="mx-auto w-full max-w-5xl">
+            <Outlet />
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -82,7 +82,7 @@ export function AdminDashboardPage() {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={survey.isActive ? "default" : "secondary"}>
+                    <Badge variant={survey.isActive ? "success" : "destructive"}>
                       {survey.isActive ? "Aktif" : "Pasif"}
                     </Badge>
                   </TableCell>

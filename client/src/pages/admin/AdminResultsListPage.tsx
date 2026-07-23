@@ -49,7 +49,7 @@ export function AdminResultsListPage() {
               <TableRow key={survey._id}>
                 <TableCell>{survey.title}</TableCell>
                 <TableCell>
-                  <Badge variant={survey.isActive ? "default" : "secondary"}>
+                  <Badge variant={survey.isActive ? "success" : "destructive"}>
                     {survey.isActive ? "Aktif" : "Pasif"}
                   </Badge>
                 </TableCell>
