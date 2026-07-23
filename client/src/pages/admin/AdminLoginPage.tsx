@@ -37,9 +37,16 @@ export function AdminLoginPage() {
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Yönetici Girişi</CardTitle>
-          <CardDescription>Anket yönetim paneline erişmek için giriş yapın.</CardDescription>
+        <CardHeader className="flex flex-col items-center gap-3 text-center">
+          <img
+            src="/kirmizi-logo.png"
+            alt="Samsun Üniversitesi"
+            className="h-16 w-auto"
+          />
+          <div>
+            <CardTitle>Yönetici Girişi</CardTitle>
+            <CardDescription>Anket yönetim paneline erişmek için giriş yapın.</CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
