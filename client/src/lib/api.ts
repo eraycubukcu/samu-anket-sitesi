@@ -50,10 +50,6 @@ adminApi.interceptors.response.use(
   },
 );
 
-// Clerk ile korunan öğrenci uçları için düz axios instance'ı; token her
-// istekte useStudentApi hook'u üzerinden taze olarak ekleniyor.
-export const api = axios.create({ baseURL });
-
 export const getErrorMessage = (error: unknown, fallback: string) => {
   if (axios.isAxiosError(error)) {
     return (

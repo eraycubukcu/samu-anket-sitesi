@@ -9,4 +9,4 @@ npm run build
 npm run lint
 ```
 
-`.env` dosyası için `.env.example`'a bakın (`VITE_API_URL`, `VITE_CLERK_PUBLISHABLE_KEY`).
+`.env` dosyasında şu değişkenler olmalı: `VITE_API_URL`, `VITE_CLERK_PUBLISHABLE_KEY`.

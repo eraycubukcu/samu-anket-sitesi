@@ -224,6 +224,17 @@ export function AdminSurveyFormPage() {
     return <p className="text-sm text-muted-foreground">Anket kopyalanıyor...</p>;
   }
 
+  if (duplicateFromId && duplicateSourceQuery.isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Anket kopyalanamadı</AlertTitle>
+        <AlertDescription>
+          Kopyalanmak istenen anket bulunamadı, silinmiş olabilir.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
