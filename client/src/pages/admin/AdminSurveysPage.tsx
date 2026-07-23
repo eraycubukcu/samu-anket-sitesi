@@ -1,13 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, BarChart3, Copy, Link2 } from "lucide-react";
+import { Plus, Pencil, Trash2, BarChart3, Copy, Link2, MoreVertical } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 import { copySurveyLink } from "@/lib/survey-link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Survey } from "@/types";
 
@@ -64,8 +71,8 @@ export function AdminSurveysPage() {
             <TableRow>
               <TableHead>Başlık</TableHead>
               <TableHead>Durum</TableHead>
-              <TableHead>Sınav Tarihi</TableHead>
-              <TableHead className="text-right">İşlemler</TableHead>
+              <TableHead className="hidden sm:table-cell">Sınav Tarihi</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -77,53 +84,45 @@ export function AdminSurveysPage() {
                     {survey.isActive ? "Aktif" : "Pasif"}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {formatDateTime(survey.examDate)}
                 </TableCell>
-                <TableCell className="flex justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Sonuçlar"
-                    nativeButton={false}
-                    render={<Link to={`/admin/anketler/${survey._id}/sonuclar`} />}
-                  >
-                    <BarChart3 className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Düzenle"
-                    nativeButton={false}
-                    render={<Link to={`/admin/anketler/${survey._id}/duzenle`} />}
-                  >
-                    <Pencil className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Linki Kopyala"
-                    onClick={() => copySurveyLink(survey._id)}
-                  >
-                    <Link2 className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Anketi Çoğalt"
-                    nativeButton={false}
-                    render={<Link to={`/admin/anketler/yeni?kopyala=${survey._id}`} />}
-                  >
-                    <Copy className="size-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(survey)}
-                    title="Sil"
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+                      <MoreVertical className="size-4" />
+                      <span className="sr-only">İşlemler</span>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        render={<Link to={`/admin/anketler/${survey._id}/sonuclar`} />}
+                      >
+                        <BarChart3 className="size-4" />
+                        Sonuçlar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        render={<Link to={`/admin/anketler/${survey._id}/duzenle`} />}
+                      >
+                        <Pencil className="size-4" />
+                        Düzenle
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => copySurveyLink(survey._id)}>
+                        <Link2 className="size-4" />
+                        Linki Kopyala
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        render={<Link to={`/admin/anketler/yeni?kopyala=${survey._id}`} />}
+                      >
+                        <Copy className="size-4" />
+                        Anketi Çoğalt
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive" onClick={() => handleDelete(survey)}>
+                        <Trash2 className="size-4" />
+                        Sil
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

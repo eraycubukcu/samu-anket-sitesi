@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { clearAdminToken } from "@/lib/api";
@@ -31,6 +32,38 @@ const navItems = [
   { to: "/admin/sonuclar", label: "Sonuçlar", icon: BarChart3, end: false },
   { to: "/admin/ayarlar", label: "Ayarlar", icon: Settings, end: true },
 ];
+
+// useSidebar() sadece SidebarProvider'ın alt ağacında çalışır, bu yüzden
+// menü SidebarProvider'ı render eden AdminLayout'tan ayrı bir bileşende.
+function AdminNavMenu({
+  isActive,
+}: {
+  isActive: (to: string, end: boolean) => boolean;
+}) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleNavigate = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
+  return (
+    <SidebarMenu>
+      {navItems.map((item) => (
+        <SidebarMenuItem key={item.to}>
+          <SidebarMenuButton
+            isActive={isActive(item.to, item.end)}
+            tooltip={item.label}
+            onClick={handleNavigate}
+            render={<NavLink to={item.to} />}
+          >
+            <item.icon />
+            <span>{item.label}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
 
 export function AdminLayout() {
   const location = useLocation();
@@ -62,20 +95,7 @@ export function AdminLayout() {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton
-                      isActive={isActive(item.to, item.end)}
-                      tooltip={item.label}
-                      render={<NavLink to={item.to} />}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <AdminNavMenu isActive={isActive} />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>

@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -21,6 +22,38 @@ const navItems = [
   { to: "/", label: "Anketler", icon: ListChecks, end: true },
   { to: "/cevaplarim", label: "Cevaplarım", icon: ClipboardList, end: false },
 ];
+
+// useSidebar() sadece SidebarProvider'ın alt ağacında çalışır, bu yüzden
+// menü SidebarProvider'ı render eden StudentLayout'tan ayrı bir bileşende.
+function StudentNavMenu({
+  isActive,
+}: {
+  isActive: (to: string, end: boolean) => boolean;
+}) {
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleNavigate = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
+  return (
+    <SidebarMenu>
+      {navItems.map((item) => (
+        <SidebarMenuItem key={item.to}>
+          <SidebarMenuButton
+            isActive={isActive(item.to, item.end)}
+            tooltip={item.label}
+            onClick={handleNavigate}
+            render={<NavLink to={item.to} />}
+          >
+            <item.icon />
+            <span>{item.label}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
 
 export function StudentLayout() {
   const location = useLocation();
@@ -52,20 +85,7 @@ export function StudentLayout() {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton
-                      isActive={isActive(item.to, item.end)}
-                      tooltip={item.label}
-                      render={<NavLink to={item.to} />}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <StudentNavMenu isActive={isActive} />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
