@@ -42,6 +42,20 @@ samu-anket-web/
 - Anket silinince ilişkili cevaplar da transaction içinde silinir (yetim kayıt kalmaz)
 - Öğrenci sadece aktif/kendi zaman penceresindeki anketleri görebilir, cevap düzenlerken sahiplik kontrolü yapılır
 
+## Ekran Görüntüleri
+
+### Öğrenci
+
+| Giriş Sayfası | Giriş Sonrası (Anket Listesi) |
+| --- | --- |
+| ![Öğrenci giriş sayfası](docs/screenshots/ss-1.png) | ![Giriş sonrası anket listesi](docs/screenshots/ss-2.png) |
+
+### Admin
+
+| Panel Görünümü | Anket Oluşturma (Koyu Tema) |
+| --- | --- |
+| ![Admin panel görünümü](docs/screenshots/ss-3.png) | ![Admin anket oluşturma - koyu tema](docs/screenshots/ss-4.png) |
+
 ## Teknoloji
 
 **Backend** — Node.js, Express 5, MongoDB + Mongoose, Clerk (`@clerk/express`), JWT, bcryptjs, `express-rate-limit`, `helmet`, `exceljs`.
