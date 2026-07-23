@@ -72,7 +72,11 @@ export function StudentLayout() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Çıkış Yap" onClick={handleLogout}>
+              <SidebarMenuButton
+                tooltip="Çıkış Yap"
+                onClick={handleLogout}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive active:bg-destructive/10 active:text-destructive"
+              >
                 <LogOut />
                 <span>Çıkış Yap</span>
               </SidebarMenuButton>

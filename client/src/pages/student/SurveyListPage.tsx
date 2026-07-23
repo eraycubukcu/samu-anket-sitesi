@@ -56,7 +56,7 @@ export function SurveyListPage() {
         {surveys.map((survey) => {
           const answered = answeredSurveyIds.has(survey._id);
           return (
-            <Card key={survey._id}>
+            <Card key={survey._id} className="flex h-full flex-col">
               <CardHeader>
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{survey.title}</CardTitle>
@@ -66,7 +66,7 @@ export function SurveyListPage() {
                   <CardDescription>{survey.description}</CardDescription>
                 )}
               </CardHeader>
-              <CardContent>
+              <CardContent className="mt-auto">
                 <Button
                   variant={answered ? "outline" : "default"}
                   className="w-full"

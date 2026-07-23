@@ -82,7 +82,11 @@ export function AdminLayout() {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Çıkış" onClick={handleLogout}>
+              <SidebarMenuButton
+                tooltip="Çıkış"
+                onClick={handleLogout}
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive active:bg-destructive/10 active:text-destructive"
+              >
                 <LogOut />
                 <span>Çıkış</span>
               </SidebarMenuButton>

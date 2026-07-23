@@ -57,7 +57,7 @@ export const requireAuth = async (req, res, next) => {
       }
 
       const clerkUser = await response.json();
-      const email = clerkUser.email_addresses?.[0]?.email_address;
+      const email = clerkUser.email_addresses?.[0]?.email_address?.toLowerCase();
 
       if (!email) {
         return res
@@ -65,7 +65,7 @@ export const requireAuth = async (req, res, next) => {
           .json({ mesaj: "Kullanıcının e-posta adresi bulunamadı" });
       }
 
-      // samsun.edu.tr kontrolü
+      // samsun.edu.tr kontrolü (domain karşılaştırması büyük/küçük harf duyarsız olmalı)
       if (!email.endsWith("@samsun.edu.tr")) {
         return res.status(403).json({
           mesaj:

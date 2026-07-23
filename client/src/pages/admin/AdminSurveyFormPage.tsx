@@ -39,9 +39,11 @@ const emptyQuestion = (): Question => ({
 // ne olursa olsun her zaman Türkiye saati (UTC+3) olarak yorumlanır.
 const toTurkeyIso = (localValue: string) => `${localValue}:00+03:00`;
 
-const fromIsoToLocalInput = (iso: string) => {
+const fromIsoToLocalInput = (iso: string | undefined | null) => {
+  if (!iso) return "";
   // ISO'daki tarihi UTC+3'e çevirip datetime-local formatına indirger
   const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
   const trDate = new Date(date.getTime() + 3 * 60 * 60 * 1000);
   return trDate.toISOString().slice(0, 16);
 };
