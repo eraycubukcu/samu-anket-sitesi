@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, BarChart3, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, BarChart3, Copy, Link2 } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
+import { copySurveyLink } from "@/lib/survey-link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -101,7 +102,15 @@ export function AdminSurveysPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    title="Kopyala"
+                    title="Linki Kopyala"
+                    onClick={() => copySurveyLink(survey._id)}
+                  >
+                    <Link2 className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Anketi Çoğalt"
                     nativeButton={false}
                     render={<Link to={`/admin/anketler/yeni?kopyala=${survey._id}`} />}
                   >

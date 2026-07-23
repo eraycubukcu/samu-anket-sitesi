@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Eye, Plus, Trash2 } from "lucide-react";
+import { Copy, Eye, Plus, Trash2 } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { SurveyPreviewDialog } from "@/components/admin/SurveyPreviewDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { copySurveyLink, getSurveyLink } from "@/lib/survey-link";
 import type { Question, QuestionType, Survey } from "@/types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
@@ -62,6 +71,7 @@ export function AdminSurveyFormPage() {
   const [isActive, setIsActive] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([emptyQuestion()]);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [createdSurveyId, setCreatedSurveyId] = useState<string | null>(null);
 
   const surveyQuery = useQuery({
     queryKey: ["admin", "survey", id],
@@ -127,10 +137,17 @@ export function AdminSurveyFormPage() {
       }
       return adminApi.post("/surveys", payload);
     },
-    onSuccess: () => {
-      toast.success(isEdit ? "Anket güncellendi." : "Anket oluşturuldu.");
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "surveys"] });
-      navigate("/admin/anketler");
+
+      if (isEdit) {
+        toast.success("Anket güncellendi.");
+        navigate("/admin/anketler");
+        return;
+      }
+
+      toast.success("Anket oluşturuldu.");
+      setCreatedSurveyId(response.data._id);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Anket kaydedilemedi."));
@@ -226,6 +243,38 @@ export function AdminSurveyFormPage() {
         description={description}
         questions={questions}
       />
+
+      <Dialog
+        open={Boolean(createdSurveyId)}
+        onOpenChange={(open) => {
+          if (!open) navigate("/admin/anketler");
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Anket oluşturuldu</DialogTitle>
+            <DialogDescription>
+              Öğrencilerle paylaşmak için aşağıdaki linki kopyalayabilirsiniz.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <Input readOnly value={createdSurveyId ? getSurveyLink(createdSurveyId) : ""} />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => createdSurveyId && copySurveyLink(createdSurveyId)}
+            >
+              <Copy className="size-4" />
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => navigate("/admin/anketler")}>
+              Tamam
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {isEnded && (
         <Alert variant="destructive">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, type Location } from "react-router-dom";
 import { useSignIn } from "@clerk/clerk-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export function SignInPage() {
   const { signIn, isLoaded } = useSignIn();
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+
+  // Öğrenci sınıf grubundan paylaşılan doğrudan bir anket linkine tıklayıp
+  // giriş yapmaya zorlandıysa, girişten sonra anasayfaya değil tıkladığı
+  // ankete geri dönmeli.
+  const from = (location.state as { from?: Location } | null)?.from;
+  const redirectTo = from ? `${from.pathname}${from.search}` : "/";
 
   const handleGoogleSignIn = async () => {
     if (!isLoaded) return;
@@ -17,7 +25,7 @@ export function SignInPage() {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/giris/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: redirectTo,
       });
     } catch {
       toast.error("Giriş başlatılamadı, lütfen tekrar deneyin.");
