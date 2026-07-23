@@ -44,17 +44,17 @@ samu-anket-web/
 
 ## Ekran Görüntüleri
 
-### Öğrenci
+**Öğrenci giriş sayfası**
+![Öğrenci giriş sayfası](docs/screenshots/ss-1.png)
 
-| Giriş Sayfası | Giriş Sonrası (Anket Listesi) |
-| --- | --- |
-| ![Öğrenci giriş sayfası](docs/screenshots/ss-1.png) | ![Giriş sonrası anket listesi](docs/screenshots/ss-2.png) |
+**Giriş sonrası anket listesi**
+![Giriş sonrası anket listesi](docs/screenshots/ss-2.png)
 
-### Admin
+**Admin panel görünümü**
+![Admin panel görünümü](docs/screenshots/ss-3.png)
 
-| Panel Görünümü | Anket Oluşturma (Koyu Tema) |
-| --- | --- |
-| ![Admin panel görünümü](docs/screenshots/ss-3.png) | ![Admin anket oluşturma - koyu tema](docs/screenshots/ss-4.png) |
+**Anket sonuçları (koyu tema)**
+![Anket sonuçları - koyu tema](docs/screenshots/ss-4.png)
 
 ## Teknoloji
 
