@@ -33,6 +33,11 @@ export const createSurvey = async (req, res) => {
     });
     res.status(201).json(survey);
   } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Bu başlıkta bir anket zaten var, farklı bir başlık seçin." });
+    }
     res.status(400).json({ message: "Anket oluşturulamadı.", hata: error.message });
   }
 };
@@ -126,6 +131,11 @@ export const updateSurvey = async (req, res) => {
 
     res.json(survey);
   } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Bu başlıkta bir anket zaten var, farklı bir başlık seçin." });
+    }
     res.status(400).json({ message: "Anket güncellenemedi.", hata: error.message });
   }
 };

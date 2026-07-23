@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Eye, Plus, Trash2 } from "lucide-react";
@@ -51,6 +51,8 @@ export function AdminSurveyFormPage() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const duplicateFromId = searchParams.get("kopyala");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -65,6 +67,13 @@ export function AdminSurveyFormPage() {
     enabled: isEdit,
   });
 
+  const duplicateSourceQuery = useQuery({
+    queryKey: ["admin", "survey", "duplicate-source", duplicateFromId],
+    queryFn: async () =>
+      (await adminApi.get<Survey>(`/surveys/${duplicateFromId}`)).data,
+    enabled: !isEdit && Boolean(duplicateFromId),
+  });
+
   useEffect(() => {
     if (!surveyQuery.data) return;
     const survey = surveyQuery.data;
@@ -76,6 +85,21 @@ export function AdminSurveyFormPage() {
       survey.questions.length > 0 ? survey.questions : [emptyQuestion()],
     );
   }, [surveyQuery.data]);
+
+  useEffect(() => {
+    if (!duplicateSourceQuery.data) return;
+    const survey = duplicateSourceQuery.data;
+    setTitle(`${survey.title} (Kopya)`);
+    setDescription(survey.description ?? "");
+    // Sınav tarihi bilinçli olarak boş bırakılıyor, admin yeni tarihi girmeli.
+    setExamDateLocal("");
+    setIsActive(false);
+    setQuestions(
+      survey.questions.length > 0
+        ? survey.questions.map(({ _id, ...q }) => q)
+        : [emptyQuestion()],
+    );
+  }, [duplicateSourceQuery.data]);
 
   const isEnded = Boolean(
     isEdit && surveyQuery.data?.endDate && new Date(surveyQuery.data.endDate) < new Date(),
@@ -177,11 +201,15 @@ export function AdminSurveyFormPage() {
     return <p className="text-sm text-muted-foreground">Yükleniyor...</p>;
   }
 
+  if (duplicateFromId && duplicateSourceQuery.isLoading) {
+    return <p className="text-sm text-muted-foreground">Anket kopyalanıyor...</p>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
-          {isEdit ? "Anketi Düzenle" : "Yeni Anket"}
+          {isEdit ? "Anketi Düzenle" : duplicateFromId ? "Anketi Kopyala" : "Yeni Anket"}
         </h1>
         <Button type="button" variant="outline" onClick={() => setPreviewOpen(true)}>
           <Eye className="size-4" />
@@ -202,6 +230,16 @@ export function AdminSurveyFormPage() {
           <AlertTitle>Anketin süresi doldu</AlertTitle>
           <AlertDescription>
             Bu anketin bitiş tarihi geçtiği için artık düzenlenemez, sadece görüntülenebilir.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {duplicateFromId && duplicateSourceQuery.data && (
+        <Alert>
+          <AlertTitle>Sorular kopyalandı</AlertTitle>
+          <AlertDescription>
+            "{duplicateSourceQuery.data.title}" anketinin soruları buraya kopyalandı.
+            Başlığı düzenleyip yeni bir sınav tarihi seçmeyi unutmayın.
           </AlertDescription>
         </Alert>
       )}

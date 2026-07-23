@@ -308,7 +308,8 @@ export const exportSurveyResults = async (req, res) => {
 
     const workbook = new ExcelJS.Workbook();
 
-    // Cevaplar sayfası: her satır bir öğrencinin cevapları
+    // Cevaplar sayfası: her satır bir cevap. Anonimlik için öğrenci kimliği
+    // (ad soyad, e-posta) maskelenir - kimin ne yazdığı belli olmasın.
     const responsesSheet = workbook.addWorksheet("Cevaplar");
     responsesSheet.columns = [
       { header: "Ad Soyad", key: "name", width: 25 },
@@ -323,8 +324,8 @@ export const exportSurveyResults = async (req, res) => {
 
     responses.forEach((r) => {
       const row = {
-        name: `${r.user?.firstName || ""} ${r.user?.lastName || ""}`.trim(),
-        email: r.user?.email || "",
+        name: "**",
+        email: "**",
         date: r.createdAt.toLocaleString("tr-TR"),
       };
 
@@ -340,30 +341,65 @@ export const exportSurveyResults = async (req, res) => {
       responsesSheet.addRow(row);
     });
 
-    // Özet sayfası: soru bazlı istatistikler
+    // Özet sayfası: her seçenek/değer için ayrı satır + Excel'in yerleşik
+    // "data bar" koşullu biçimlendirmesiyle görsel çubuk grafik.
     const summary = buildSurveySummary(survey, responses);
     const summarySheet = workbook.addWorksheet("Özet");
     summarySheet.columns = [
       { header: "Soru", key: "question", width: 40 },
-      { header: "Tip", key: "type", width: 15 },
-      { header: "Detay", key: "detail", width: 70 },
+      { header: "Seçenek / Değer", key: "option", width: 25 },
+      { header: "Cevap Sayısı", key: "count", width: 15 },
+      { header: "Oran", key: "percent", width: 12 },
     ];
 
+    const total = responses.length;
+
     summary.forEach((s) => {
-      let detail = "";
       if (s.questionType === "rating") {
-        detail = `Ortalama: ${s.average} | ${s.distribution
-          .map((d) => `${d.star}★:${d.count}`)
-          .join(", ")}`;
+        [1, 2, 3, 4, 5].forEach((star) => {
+          const found = s.distribution.find((d) => d.star === star);
+          const count = found ? found.count : 0;
+          const row = summarySheet.addRow({
+            question: s.questionText,
+            option: `${star} Yıldız`,
+            count,
+            percent: total ? count / total : 0,
+          });
+          row.getCell("percent").numFmt = "0%";
+        });
       } else if (s.questionType === "radio" || s.questionType === "checkbox") {
-        detail = Object.entries(s.optionCounts)
-          .map(([opt, count]) => `${opt}: ${count}`)
-          .join(", ");
+        Object.entries(s.optionCounts).forEach(([option, count]) => {
+          const row = summarySheet.addRow({
+            question: s.questionText,
+            option,
+            count,
+            percent: total ? count / total : 0,
+          });
+          row.getCell("percent").numFmt = "0%";
+        });
       } else if (s.questionType === "text") {
-        detail = `${s.answers.length} cevap`;
+        const row = summarySheet.addRow({
+          question: s.questionText,
+          option: "(metin cevaplar)",
+          count: s.answers.length,
+          percent: total ? s.answers.length / total : 0,
+        });
+        row.getCell("percent").numFmt = "0%";
       }
-      summarySheet.addRow({ question: s.questionText, type: s.questionType, detail });
     });
+
+    if (summarySheet.rowCount > 1) {
+      summarySheet.addConditionalFormatting({
+        ref: `C2:C${summarySheet.rowCount}`,
+        rules: [
+          {
+            type: "dataBar",
+            cfvo: [{ type: "min" }, { type: "max" }],
+            color: { argb: "FF638EC6" },
+          },
+        ],
+      });
+    }
 
     res.setHeader(
       "Content-Type",
