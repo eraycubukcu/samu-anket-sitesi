@@ -267,7 +267,11 @@ export function AdminSurveyFormPage() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: QuestionType | null) =>
+                          value ? QUESTION_TYPE_LABELS[value] : "Soru tipi seçin"
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (

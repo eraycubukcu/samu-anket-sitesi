@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, BarChart3 } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
+import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -76,7 +77,7 @@ export function AdminSurveysPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {new Date(survey.examDate).toLocaleString("tr-TR")}
+                  {formatDateTime(survey.examDate)}
                 </TableCell>
                 <TableCell className="flex justify-end gap-1">
                   <Button

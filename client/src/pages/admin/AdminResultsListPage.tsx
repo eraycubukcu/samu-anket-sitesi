@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { BarChart3 } from "lucide-react";
 import { adminApi } from "@/lib/api";
+import { formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,7 +55,7 @@ export function AdminResultsListPage() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {new Date(survey.examDate).toLocaleString("tr-TR")}
+                  {formatDateTime(survey.examDate)}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
