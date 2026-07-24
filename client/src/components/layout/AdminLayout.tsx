@@ -27,7 +27,15 @@ import { clearAdminToken } from "@/lib/api";
 
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/anketler", label: "Anketler", icon: ListChecks, end: false },
+  {
+    to: "/admin/anketler",
+    label: "Anketler",
+    icon: ListChecks,
+    end: false,
+    // "/admin/anketler/yeni" kendi menü öğesine sahip, "Anketler" ile
+    // birlikte aktif görünmesin diye burada hariç tutuluyor.
+    exclude: ["/admin/anketler/yeni"],
+  },
   { to: "/admin/anketler/yeni", label: "Anket Oluştur", icon: PlusCircle, end: true },
   { to: "/admin/sonuclar", label: "Sonuçlar", icon: BarChart3, end: false },
   { to: "/admin/ayarlar", label: "Ayarlar", icon: Settings, end: true },
@@ -38,7 +46,7 @@ const navItems = [
 function AdminNavMenu({
   isActive,
 }: {
-  isActive: (to: string, end: boolean) => boolean;
+  isActive: (to: string, end: boolean, exclude?: string[]) => boolean;
 }) {
   const { isMobile, setOpenMobile } = useSidebar();
 
@@ -51,7 +59,7 @@ function AdminNavMenu({
       {navItems.map((item) => (
         <SidebarMenuItem key={item.to}>
           <SidebarMenuButton
-            isActive={isActive(item.to, item.end)}
+            isActive={isActive(item.to, item.end, item.exclude)}
             tooltip={item.label}
             onClick={handleNavigate}
             render={<NavLink to={item.to} />}
@@ -69,8 +77,10 @@ export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isActive = (to: string, end: boolean) =>
-    end ? location.pathname === to : location.pathname.startsWith(to);
+  const isActive = (to: string, end: boolean, exclude: string[] = []) => {
+    if (exclude.some((path) => location.pathname.startsWith(path))) return false;
+    return end ? location.pathname === to : location.pathname.startsWith(to);
+  };
 
   const handleLogout = () => {
     clearAdminToken();
