@@ -308,6 +308,12 @@ export const exportSurveyResults = async (req, res) => {
 
     const workbook = new ExcelJS.Workbook();
 
+    // Serbest metin sorular (açık uçlu yorumlar) Excel çıktısına dahil
+    // edilmez - sadece puanlama ve çoktan seçmeli sorular raporlanır.
+    const exportableQuestions = survey.questions.filter(
+      (q) => q.questionType !== "text",
+    );
+
     // Cevaplar sayfası: her satır bir cevap. Anonimlik için öğrenci kimliği
     // (ad soyad, e-posta) maskelenir - kimin ne yazdığı belli olmasın.
     const responsesSheet = workbook.addWorksheet("Cevaplar");
@@ -315,7 +321,7 @@ export const exportSurveyResults = async (req, res) => {
       { header: "Ad Soyad", key: "name", width: 25 },
       { header: "E-posta", key: "email", width: 30 },
       { header: "Gönderim Tarihi", key: "date", width: 20 },
-      ...survey.questions.map((q) => ({
+      ...exportableQuestions.map((q) => ({
         header: q.questionText,
         key: q._id.toString(),
         width: 30,
@@ -329,7 +335,7 @@ export const exportSurveyResults = async (req, res) => {
         date: r.createdAt.toLocaleString("tr-TR"),
       };
 
-      survey.questions.forEach((q) => {
+      exportableQuestions.forEach((q) => {
         const answerEntry = r.answers.find(
           (a) => a.questionId.toString() === q._id.toString(),
         );
@@ -343,7 +349,9 @@ export const exportSurveyResults = async (req, res) => {
 
     // Özet sayfası: her seçenek/değer için ayrı satır + Excel'in yerleşik
     // "data bar" koşullu biçimlendirmesiyle görsel çubuk grafik.
-    const summary = buildSurveySummary(survey, responses);
+    const summary = buildSurveySummary(survey, responses).filter(
+      (s) => s.questionType !== "text",
+    );
     const summarySheet = workbook.addWorksheet("Özet");
     summarySheet.columns = [
       { header: "Soru", key: "question", width: 40 },
@@ -377,14 +385,6 @@ export const exportSurveyResults = async (req, res) => {
           });
           row.getCell("percent").numFmt = "0%";
         });
-      } else if (s.questionType === "text") {
-        const row = summarySheet.addRow({
-          question: s.questionText,
-          option: "(metin cevaplar)",
-          count: s.answers.length,
-          percent: total ? s.answers.length / total : 0,
-        });
-        row.getCell("percent").numFmt = "0%";
       }
     });
 

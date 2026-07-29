@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BarChart3 } from "lucide-react";
 import { adminApi } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { Survey } from "@/types";
 
 export function AdminResultsListPage() {
+  const navigate = useNavigate();
   const surveysQuery = useQuery({
     queryKey: ["admin", "surveys"],
     queryFn: async () => (await adminApi.get<Survey[]>("/surveys")).data,
@@ -47,7 +48,11 @@ export function AdminResultsListPage() {
           </TableHeader>
           <TableBody>
             {surveysQuery.data.map((survey) => (
-              <TableRow key={survey._id}>
+              <TableRow
+                key={survey._id}
+                onClick={() => navigate(`/admin/anketler/${survey._id}/sonuclar`)}
+                className="cursor-pointer"
+              >
                 <TableCell>{survey.title}</TableCell>
                 <TableCell>
                   <Badge variant={survey.isActive ? "success" : "destructive"}>
@@ -62,6 +67,7 @@ export function AdminResultsListPage() {
                     variant="ghost"
                     size="sm"
                     nativeButton={false}
+                    onClick={(e) => e.stopPropagation()}
                     render={<Link to={`/admin/anketler/${survey._id}/sonuclar`} />}
                   >
                     <BarChart3 className="size-4" />
