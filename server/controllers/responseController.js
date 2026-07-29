@@ -401,13 +401,18 @@ export const exportSurveyResults = async (req, res) => {
       });
     }
 
+    const filenameBase = `${survey.title} sonuçları`
+      .replace(/[\r\n\\/:*?"<>|]/g, "")
+      .trim();
+    const asciiFallback = filenameBase.replace(/[^\x20-\x7E]/g, "_");
+
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="anket-sonuclari-${survey._id}.xlsx"`,
+      `attachment; filename="${asciiFallback}.xlsx"; filename*=UTF-8''${encodeURIComponent(filenameBase)}.xlsx`,
     );
 
     await workbook.xlsx.write(res);

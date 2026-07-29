@@ -7,6 +7,7 @@ import { adminApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QuestionBarChart } from "@/components/admin/QuestionBarChart";
 import type { SurveyResults } from "@/types";
 
 function BackButton() {
@@ -39,10 +40,13 @@ export function AdminSurveyResultsPage() {
       const response = await adminApi.get(`/responses/survey/${id}/export`, {
         responseType: "blob",
       });
+      const filename = `${resultsQuery.data?.survey ?? "anket"} sonuçları`
+        .replace(/[\\/:*?"<>|]/g, "")
+        .trim();
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.download = `anket-sonuclari-${id}.xlsx`;
+      link.download = `${filename}.xlsx`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -102,50 +106,28 @@ export function AdminSurveyResultsPage() {
             </CardHeader>
             <CardContent>
               {question.questionType === "rating" && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p className="text-sm">
                     Ortalama: <span className="font-semibold">{question.average}</span>
                   </p>
-                  <div className="space-y-1">
-                    {question.distribution.map((d) => (
-                      <div key={d.star} className="flex items-center gap-2 text-sm">
-                        <span className="w-10 text-muted-foreground">{d.star} ★</span>
-                        <div className="h-2 flex-1 rounded bg-muted">
-                          <div
-                            className="h-2 rounded bg-primary"
-                            style={{
-                              width: results.totalResponses
-                                ? `${(d.count / results.totalResponses) * 100}%`
-                                : "0%",
-                            }}
-                          />
-                        </div>
-                        <span className="w-6 text-right text-muted-foreground">{d.count}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <QuestionBarChart
+                    data={question.distribution.map((d) => ({
+                      label: `${d.star} ★`,
+                      count: d.count,
+                    }))}
+                    total={results.totalResponses}
+                  />
                 </div>
               )}
 
               {(question.questionType === "radio" || question.questionType === "checkbox") && (
-                <div className="space-y-1">
-                  {Object.entries(question.optionCounts).map(([option, count]) => (
-                    <div key={option} className="flex items-center gap-2 text-sm">
-                      <span className="w-32 truncate">{option}</span>
-                      <div className="h-2 flex-1 rounded bg-muted">
-                        <div
-                          className="h-2 rounded bg-primary"
-                          style={{
-                            width: results.totalResponses
-                              ? `${(count / results.totalResponses) * 100}%`
-                              : "0%",
-                          }}
-                        />
-                      </div>
-                      <span className="w-6 text-right text-muted-foreground">{count}</span>
-                    </div>
-                  ))}
-                </div>
+                <QuestionBarChart
+                  data={Object.entries(question.optionCounts).map(([option, count]) => ({
+                    label: option,
+                    count,
+                  }))}
+                  total={results.totalResponses}
+                />
               )}
 
               {question.questionType === "text" && (
