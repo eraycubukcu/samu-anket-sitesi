@@ -286,7 +286,7 @@ export const getSurveyResults = async (req, res) => {
 export const getMyResponses = async (req, res) => {
   try {
     const responses = await Response.find({ user: req.user._id })
-      .populate("survey", "title description isActive startDate endDate")
+      .populate("survey", "title slug description isActive startDate endDate")
       .sort({ createdAt: -1 });
 
     res.json(responses);

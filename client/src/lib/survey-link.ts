@@ -1,11 +1,11 @@
 import { toast } from "sonner";
 
-export const getSurveyLink = (surveyId: string) =>
-  `${window.location.origin}/anketler/${surveyId}`;
+export const getSurveyLink = (surveySlug: string) =>
+  `${window.location.origin}/anketler/${surveySlug}`;
 
-export const copySurveyLink = async (surveyId: string) => {
+export const copySurveyLink = async (surveySlug: string) => {
   try {
-    await navigator.clipboard.writeText(getSurveyLink(surveyId));
+    await navigator.clipboard.writeText(getSurveyLink(surveySlug));
     toast.success("Anket linki kopyalandı.");
   } catch {
     toast.error("Link kopyalanamadı.");

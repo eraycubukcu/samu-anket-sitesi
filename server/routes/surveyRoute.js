@@ -14,7 +14,7 @@ const router = express.Router();
 
 // student routes
 router.get("/active", requireAuth, getActiveSurveys);
-router.get("/student/:id", requireAuth, getSurveyForStudent);
+router.get("/student/:slug", requireAuth, getSurveyForStudent);
 
 // admin routes
 router.get("/", requireAdmin, getAllSurveys);

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node scripts/seedAdmin.js"
+    "seed": "node scripts/seedAdmin.js",
+    "backfill-slugs": "node scripts/backfillSurveySlugs.js"
   },
   "keywords": [],
   "author": "",

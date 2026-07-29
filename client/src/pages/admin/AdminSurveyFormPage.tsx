@@ -71,7 +71,7 @@ export function AdminSurveyFormPage() {
   const [isActive, setIsActive] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([emptyQuestion()]);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [createdSurveyId, setCreatedSurveyId] = useState<string | null>(null);
+  const [createdSurveySlug, setCreatedSurveySlug] = useState<string | null>(null);
 
   const surveyQuery = useQuery({
     queryKey: ["admin", "survey", id],
@@ -147,7 +147,7 @@ export function AdminSurveyFormPage() {
       }
 
       toast.success("Anket oluşturuldu.");
-      setCreatedSurveyId(response.data._id);
+      setCreatedSurveySlug(response.data.slug);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Anket kaydedilemedi."));
@@ -256,7 +256,7 @@ export function AdminSurveyFormPage() {
       />
 
       <Dialog
-        open={Boolean(createdSurveyId)}
+        open={Boolean(createdSurveySlug)}
         onOpenChange={(open) => {
           if (!open) navigate("/admin/anketler");
         }}
@@ -269,12 +269,12 @@ export function AdminSurveyFormPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
-            <Input readOnly value={createdSurveyId ? getSurveyLink(createdSurveyId) : ""} />
+            <Input readOnly value={createdSurveySlug ? getSurveyLink(createdSurveySlug) : ""} />
             <Button
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => createdSurveyId && copySurveyLink(createdSurveyId)}
+              onClick={() => createdSurveySlug && copySurveyLink(createdSurveySlug)}
             >
               <Copy className="size-4" />
             </Button>

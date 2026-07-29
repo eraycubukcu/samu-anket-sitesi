@@ -69,7 +69,7 @@ export const getSurveyForStudent = async (req, res) => {
   try {
     const now = new Date();
     const survey = await Survey.findOne({
-      _id: req.params.id,
+      slug: req.params.slug,
       isActive: true,
       startDate: { $lte: now },
       endDate: { $gte: now },
@@ -82,7 +82,7 @@ export const getSurveyForStudent = async (req, res) => {
 
     res.json(survey);
   } catch (error) {
-    res.status(400).json({ message: "Geçersiz anket kimliği." });
+    res.status(400).json({ message: "Anket getirilemedi." });
   }
 };
 

@@ -28,7 +28,7 @@ function App() {
       <Route element={<RequireStudent />}>
         <Route element={<StudentLayout />}>
           <Route path="/" element={<SurveyListPage />} />
-          <Route path="/anketler/:id" element={<SurveyAnswerPage />} />
+          <Route path="/anketler/:slug" element={<SurveyAnswerPage />} />
           <Route path="/cevaplarim" element={<MyResponsesPage />} />
         </Route>
       </Route>

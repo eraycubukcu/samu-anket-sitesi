@@ -17,16 +17,16 @@ import type { Answer, StudentResponse, Survey } from "@/types";
 type AnswerValue = string | string[] | number;
 
 export function SurveyAnswerPage() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const studentApi = useStudentApi();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
 
   const surveyQuery = useQuery({
-    queryKey: ["surveys", "student", id],
-    queryFn: async () => (await studentApi.get<Survey>(`/surveys/student/${id}`)).data,
-    enabled: Boolean(id),
+    queryKey: ["surveys", "student", slug],
+    queryFn: async () => (await studentApi.get<Survey>(`/surveys/student/${slug}`)).data,
+    enabled: Boolean(slug),
   });
 
   const myResponsesQuery = useQuery({
@@ -34,7 +34,9 @@ export function SurveyAnswerPage() {
     queryFn: async () => (await studentApi.get<StudentResponse[]>("/responses/my")).data,
   });
 
-  const existingResponse = myResponsesQuery.data?.find((r) => r.survey._id === id);
+  const existingResponse = myResponsesQuery.data?.find(
+    (r) => r.survey._id === surveyQuery.data?._id,
+  );
 
   useEffect(() => {
     if (!existingResponse) return;
@@ -47,6 +49,8 @@ export function SurveyAnswerPage() {
 
   const submitMutation = useMutation({
     mutationFn: async () => {
+      if (!surveyQuery.data) throw new Error("Anket bulunamadı.");
+
       const payload: Answer[] = Object.entries(answers).map(([questionId, answer]) => ({
         questionId,
         answer,
@@ -55,7 +59,7 @@ export function SurveyAnswerPage() {
       if (existingResponse) {
         return studentApi.put(`/responses/${existingResponse._id}`, { answers: payload });
       }
-      return studentApi.post("/responses", { surveyId: id, answers: payload });
+      return studentApi.post("/responses", { surveyId: surveyQuery.data._id, answers: payload });
     },
     onSuccess: () => {
       toast.success(existingResponse ? "Cevaplarınız güncellendi." : "Cevaplarınız kaydedildi.");

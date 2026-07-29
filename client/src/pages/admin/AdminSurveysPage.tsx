@@ -106,7 +106,7 @@ export function AdminSurveysPage() {
                         <Pencil className="size-4" />
                         Düzenle
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => copySurveyLink(survey._id)}>
+                      <DropdownMenuItem onClick={() => copySurveyLink(survey.slug)}>
                         <Link2 className="size-4" />
                         Linki Kopyala
                       </DropdownMenuItem>

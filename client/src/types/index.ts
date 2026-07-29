@@ -10,6 +10,7 @@ export interface Question {
 
 export interface Survey {
   _id: string;
+  slug: string;
   title: string;
   description: string;
   questions: Question[];
@@ -30,7 +31,7 @@ export interface StudentResponse {
   _id: string;
   survey: Pick<
     Survey,
-    "_id" | "title" | "description" | "isActive" | "startDate" | "endDate"
+    "_id" | "slug" | "title" | "description" | "isActive" | "startDate" | "endDate"
   >;
   answers: Answer[];
   createdAt: string;

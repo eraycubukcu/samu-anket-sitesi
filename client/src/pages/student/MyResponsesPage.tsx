@@ -74,7 +74,7 @@ export function MyResponsesPage() {
                     variant="outline"
                     size="sm"
                     nativeButton={false}
-                    render={<Link to={`/anketler/${response.survey._id}`} />}
+                    render={<Link to={`/anketler/${response.survey.slug}`} />}
                   >
                     <Pencil className="size-4" />
                     Düzenle

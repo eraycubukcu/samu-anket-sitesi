@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { computeSurveyWindow } from "../utils/surveySchedule.js";
+import { slugify, ensureUniqueSlug } from "../utils/slug.js";
 
 const questionSchema = mongoose.Schema({
   questionText: {
@@ -41,6 +42,14 @@ const surveySchema = mongoose.Schema(
       required: true,
       unique: true,
     },
+    // Öğrenciyle paylaşılan anket linkinde kullanılır (/anketler/:slug).
+    // Sadece oluşturulurken üretilir; başlık sonradan değişse bile link
+    // kırılmasın diye slug bir daha güncellenmez.
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     description: {
       type: String,
       default: "",
@@ -79,11 +88,16 @@ const surveySchema = mongoose.Schema(
 
 // examDate her set edildiğinde/değiştiğinde açılış-kapanış otomatik hesaplanır:
 // sınavdan 10 dk önce açılır, sınav gününün (TR saatiyle) 23:59'unda kapanır.
-surveySchema.pre("validate", function () {
+surveySchema.pre("validate", async function () {
   if (this.examDate && this.isModified("examDate")) {
     const { startDate, endDate } = computeSurveyWindow(this.examDate);
     this.startDate = startDate;
     this.endDate = endDate;
+  }
+
+  if (this.isNew && !this.slug) {
+    const base = slugify(this.title);
+    this.slug = await ensureUniqueSlug(this.constructor, base);
   }
 });
 
@@ -106,6 +120,7 @@ export default mongoose.model("Survey", surveySchema);
 /* 
 Survey Modeli
  - Title
+ - slug (öğrenci linki için, oluşturulurken bir kere üretilir)
  - Description
  - Questions
  - createdBy 
