@@ -236,12 +236,19 @@ def simulate_course_term(rng, topics, latent_topic, latent_general, n_students):
         if rng.random() < 0.55:
             items = [((t, d), r) for (t, d), r in ratings.items()]
             items += [((None, d), r) for d, r in general.items()]
-            (min_t, min_d), min_r = min(items, key=lambda x: x[1] + rng.random() * 0.1)
-            (max_t, max_d), max_r = max(items, key=lambda x: x[1] + rng.random() * 0.1)
-            if min_r <= 2:
-                sentiment, topic, dim = "olumsuz", min_t, min_d
-            elif max_r >= 4 and rng.random() < 0.6:
-                sentiment, topic, dim = "olumlu", max_t, max_d
+            # Öğrenci ya en çok şikâyet ettiği ya da en beğendiği şey hakkında yazar.
+            # Şikâyetler 2 kat ağırlıklı: memnuniyetsiz öğrenci yorum yazmaya daha yatkın.
+            negatives = [x for x in items if x[1] <= 2]
+            positives = [x for x in items if x[1] >= 4]
+            weight_neg, weight_pos = 2 * len(negatives), len(positives)
+            roll = rng.random()
+            if (weight_neg or weight_pos) and rng.random() > 0.15:
+                if roll < weight_neg / (weight_neg + weight_pos):
+                    (topic, dim), _ = min(negatives, key=lambda x: x[1] + rng.random() * 0.5)
+                    sentiment = "olumsuz"
+                else:
+                    (topic, dim), _ = max(positives, key=lambda x: x[1] + rng.random() * 0.5)
+                    sentiment = "olumlu"
             else:
                 sentiment = "notr"
                 topic = topics[rng.integers(len(topics))]

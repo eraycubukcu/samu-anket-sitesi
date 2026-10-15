@@ -30,7 +30,13 @@ npm run lint             # oxlint
 # ml/  (Python 3.12, venv in ml/.venv)
 py -3.12 -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt
 .venv/Scripts/python data/generate_synthetic.py --seed 42   # deterministic synthetic data -> ml/data/generated/ (gitignored)
+.venv/Scripts/python -m app.train          # train models -> models/*.joblib (gitignored), models/metrics.json, reports/model_raporu.md
+.venv/Scripts/python -m pytest -q          # all ML tests
+.venv/Scripts/python -m pytest tests/test_api.py -k planted   # single test
+.venv/Scripts/python -m uvicorn app.main:app --reload --port 8000
 ```
+
+The ML service needs `ML_SERVICE_TOKEN` (env or `ml/.env`, see `ml/.env.example`) and refuses to start without it. API tests need the generated data and a trained model, and skip otherwise.
 
 There is no test suite in either project.
 
@@ -71,7 +77,9 @@ Student-facing survey links use `slug` (`/anketler/:slug` → `GET /api/surveys/
 - `ml/data/generate_synthetic.py` is the single source of truth for demo data. It simulates hidden ("latent") quality per course × term × topic × dimension, and derives labels from that hidden quality (plus 8% noise), never from the observed ratings. It outputs the demo dataset JSON and the training CSVs.
 - `server/scripts/seedDemoData.js` writes straight to the collections (bypassing Mongoose, so the extra `isDemo: true` field is kept), so it computes `startDate`/`endDate`/`slug` itself. Every demo response is checked with `validateAnswersAgainstSurvey` (exported from `responseController.js`) before anything is deleted.
 - `ml/app/pipeline/features.py` computes model features for a topic (`TopicUnit` → `compute_features`). Training data and live analysis must both go through it. Comments are linked to topics by name match (`attribute_comment`).
-- Project skill `.claude/skills/demo-veri-yenile` covers the regenerate-and-seed flow.
+- Project skill `.claude/skills/demo-veri-yenile` covers the regenerate-and-seed flow. After regenerating data, retrain (`python -m app.train`) and reseed, so the DB, the models and `reports/model_raporu.md` all come from the same dataset.
+- `/analyze` contract and the rules for how questions are interpreted: `docs/specs/faz-3-ml-servisi.md`. `app/pipeline/builder.py` turns the request into `TermData`/`TopicUnit`. A question is used by its `type` + `topic` + `dimension`, never by its text. Example: a difficulty question must be a `radio` with dimension `sinav`, no topic, and exactly 5 options.
+- Decision explanations use local perturbation (each feature is replaced by the training median). `n_responses` is a model input but is never shown as a reason. `MIN_RESPONSES = 5` (KVKK): below it, `/analyze` returns only `insufficient_data`.
 
 ### Client
 - Route tree is in `client/src/App.tsx`. Paths are Turkish (`/giris`, `/cevaplarim`, `/admin/anketler/:id/sonuclar`). `RequireStudent` and `RequireAdmin` are layout-route guards.

@@ -19,3 +19,4 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 ml/data/generated/
+ml/models/*.joblib

@@ -1,0 +1,223 @@
+{
+  "version": "2026-10-15T16:47:35+00:00",
+  "decision": {
+    "candidates": {
+      "random_forest": {
+        "cv_macro_f1_mean": 0.7903,
+        "cv_macro_f1_std": 0.013
+      },
+      "logistic_regression": {
+        "cv_macro_f1_mean": 0.7707,
+        "cv_macro_f1_std": 0.015
+      }
+    },
+    "selected": "random_forest",
+    "test_macro_f1": 0.7771,
+    "test_accuracy": 0.8056,
+    "confusion_matrix": {
+      "labels": [
+        "iyilestirme_gerekli",
+        "izlenmeli",
+        "gerek_yok"
+      ],
+      "matrix": [
+        [
+          116,
+          11,
+          3
+        ],
+        [
+          24,
+          49,
+          19
+        ],
+        [
+          2,
+          11,
+          125
+        ]
+      ]
+    },
+    "classification_report": {
+      "iyilestirme_gerekli": {
+        "precision": 0.8169014084507042,
+        "recall": 0.8923076923076924,
+        "f1-score": 0.8529411764705882,
+        "support": 130.0
+      },
+      "izlenmeli": {
+        "precision": 0.6901408450704225,
+        "recall": 0.532608695652174,
+        "f1-score": 0.6012269938650306,
+        "support": 92.0
+      },
+      "gerek_yok": {
+        "precision": 0.8503401360544217,
+        "recall": 0.9057971014492754,
+        "f1-score": 0.8771929824561403,
+        "support": 138.0
+      },
+      "accuracy": 0.8055555555555556,
+      "macro avg": {
+        "precision": 0.7857941298585162,
+        "recall": 0.7769044964697139,
+        "f1-score": 0.7771203842639197,
+        "support": 360.0
+      },
+      "weighted avg": {
+        "precision": 0.7973252211682795,
+        "recall": 0.8055555555555556,
+        "f1-score": 0.7979107443214073,
+        "support": 360.0
+      }
+    },
+    "permutation_importance": [
+      {
+        "feature": "low_ratio",
+        "mean": 0.2091,
+        "std": 0.022
+      },
+      {
+        "feature": "mean_materyal",
+        "mean": 0.0689,
+        "std": 0.0092
+      },
+      {
+        "feature": "mean_sinav",
+        "mean": 0.0538,
+        "std": 0.0053
+      },
+      {
+        "feature": "mean_icerik",
+        "mean": 0.0343,
+        "std": 0.0101
+      },
+      {
+        "feature": "mean_ogretim",
+        "mean": 0.0113,
+        "std": 0.0049
+      },
+      {
+        "feature": "mean_is_yuku",
+        "mean": 0.0098,
+        "std": 0.005
+      },
+      {
+        "feature": "hardest_rate",
+        "mean": 0.0095,
+        "std": 0.0076
+      },
+      {
+        "feature": "topic_std",
+        "mean": 0.0088,
+        "std": 0.0087
+      },
+      {
+        "feature": "trend",
+        "mean": -0.0002,
+        "std": 0.0052
+      },
+      {
+        "feature": "neg_comment_ratio",
+        "mean": -0.0018,
+        "std": 0.0055
+      },
+      {
+        "feature": "difficulty_mean",
+        "mean": -0.0026,
+        "std": 0.0018
+      },
+      {
+        "feature": "n_responses",
+        "mean": -0.0032,
+        "std": 0.0028
+      }
+    ],
+    "n_train": 1440,
+    "n_test": 360
+  },
+  "sentiment": {
+    "test_accuracy": 1.0,
+    "test_macro_f1": 1.0,
+    "handwritten_accuracy": 0.7333,
+    "handwritten_examples": [
+      {
+        "text": "Hocanın anlattığı hiçbir şey kafama girmedi, çok kötü bir dönemdi",
+        "label": "olumsuz",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Final sınavı derste gördüklerimizle alakasızdı",
+        "label": "olumsuz",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Kaynak kitap yoktu, internetten kendimiz bulmaya çalıştık",
+        "label": "olumsuz",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Laboratuvar saatleri yetersiz kaldı, uygulama yapamadık",
+        "label": "olumsuz",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Proje teslim tarihleri çok sıkışıktı, uyku uyuyamadık",
+        "label": "olumsuz",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Ders gerçekten çok öğreticiydi, emeği geçenlere teşekkürler",
+        "label": "olumlu",
+        "predicted": "olumlu"
+      },
+      {
+        "text": "Hoca konuları örneklerle açıkladığı için rahat anladım",
+        "label": "olumlu",
+        "predicted": "olumlu"
+      },
+      {
+        "text": "Sınav adildi, çalışan herkes geçebilirdi",
+        "label": "olumlu",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Paylaşılan notlar çok derli topluydu, işimi kolaylaştırdı",
+        "label": "olumlu",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Bu dönem aldığım en keyifli dersti",
+        "label": "olumlu",
+        "predicted": "olumlu"
+      },
+      {
+        "text": "Ders ortalama geçti, özel bir yorumum yok",
+        "label": "notr",
+        "predicted": "olumlu"
+      },
+      {
+        "text": "Bazı haftalar iyiydi bazı haftalar sıkıcıydı",
+        "label": "notr",
+        "predicted": "notr"
+      },
+      {
+        "text": "Konular normal hızda işlendi",
+        "label": "notr",
+        "predicted": "olumsuz"
+      },
+      {
+        "text": "Sınav beklediğim zorluktaydı",
+        "label": "notr",
+        "predicted": "notr"
+      },
+      {
+        "text": "Ek kaynak verilirse daha iyi olabilir",
+        "label": "notr",
+        "predicted": "notr"
+      }
+    ],
+    "n_train": 2817,
+    "n_test": 705
+  }
+}

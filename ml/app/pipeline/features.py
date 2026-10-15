@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
+from app.pipeline.preprocess import fold
+
 TOPIC_DIMENSIONS = ("icerik", "sinav", "materyal")
 GENERAL_DIMENSIONS = ("ogretim", "is_yuku")
 SENTIMENTS = ("olumlu", "notr", "olumsuz")
@@ -104,13 +106,10 @@ def compute_features(unit: TopicUnit) -> dict[str, float]:
     }
 
 
-def _fold(text: str) -> str:
-    """Türkçe karakter ve büyük/küçük harf farkını yok sayarak karşılaştırma için."""
-    table = str.maketrans("İIıŞşĞğÜüÖöÇç", "iiissgguuoocc")
-    return text.translate(table).lower()
-
-
 def attribute_comment(text: str, topics: list[str]) -> list[str]:
-    """Yorumda adı geçen konuları döner (yorum → konu eşlemesi)."""
-    folded = _fold(text)
-    return [t for t in topics if _fold(t) in folded]
+    """Yorumda adı geçen konuları döner (yorum → konu eşlemesi).
+
+    Türkçe karakter ve büyük/küçük harf farkı yok sayılır.
+    """
+    folded = fold(text)
+    return [t for t in topics if fold(t) in folded]

@@ -8,7 +8,8 @@ start "SAMU Client" cmd /k "cd /d client && npm run dev"
 
 if not exist "ml\app\main.py" goto noml
 if not exist "ml\.venv\Scripts\activate.bat" goto novenv
-start "SAMU ML" cmd /k "cd /d ml && call .venv\Scripts\activate.bat && uvicorn app.main:app --reload --port 8000"
+rem Model yoksa (ilk kurulum) once egitilir
+start "SAMU ML" cmd /k "cd /d ml && call .venv\Scripts\activate.bat && (if not exist models\decision.joblib python -m app.train) && uvicorn app.main:app --reload --port 8000"
 goto end
 
 :novenv
