@@ -46,6 +46,7 @@ ML servisi dışarıya açık değildir. Sadece Node backend, paylaşılan bir t
 - Dört soru tipi: metin, 1-5 puanlama, tek seçim, çoklu seçim (seçenek sayısı ve zorunluluk admin tarafından belirlenir)
 - **Sınav tarihine göre otomatik zamanlama**: admin sadece sınav tarih/saatini girer. Anket sınavdan 10 dakika önce otomatik açılır, sınav gününün (TR saatiyle) 23:59'unda otomatik kapanır ve ertesi güne sarkmaz.
 - Anket kaydetmeden önce öğrenci görünümünde canlı önizleme
+- **Link ve QR kod**: anket linkini kopyalama veya QR kodunu gösterip PNG olarak indirme (sınıfta tahtaya yansıtmak için). Öğrenci kodu okutunca giriş yapar ve doğrudan ankete yönlenir.
 - **Dersler ve müfredat konuları**: Anketler bir derse, sorular o dersin bir müfredat konusuna ve bir değerlendirme boyutuna (içerik, öğretim, materyal, sınav, iş yükü) bağlanır.
 - Dashboard: toplam/aktif anket, toplam cevap, toplam öğrenci sayısı ve son anketler
 - Sonuç sayfası: soru bazlı özet istatistik (ortalama, seçenek dağılımı)
@@ -169,6 +170,20 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_...
 ```
 
 > `VITE_CLERK_PUBLISHABLE_KEY` backend'deki `CLERK_PUBLISHABLE_KEY` ile aynı olmalı (public key, gizli değil).
+
+Opsiyonel `VITE_PUBLIC_APP_URL`: öğrenciye paylaşılan link ve QR kodun adresi. Boşsa panelin açıldığı adres kullanılır; canlıda gerçek alan adı yazılır (bkz. `client/.env.example`).
+
+**QR kodu telefonla yerelde denemek** (telefon ve bilgisayar aynı Wi-Fi'da):
+
+1. Bilgisayarın yerel IP'sini bulun (`ipconfig` → IPv4, ör. `192.168.1.20`).
+2. `client/.env` içinde:
+   ```
+   VITE_API_URL=/api
+   VITE_PUBLIC_APP_URL=http://192.168.1.20:5173
+   ```
+   `/api`, Vite'ın backend'e yönlendiren proxy'sini kullanır; telefonun `localhost:5000`'e ulaşamaması sorununu çözer.
+3. Frontend'i ağa açık başlatın: `npm run dev -- --host` (Windows güvenlik duvarı izin isteyebilir).
+4. Panelde anketin QR kodunu açıp telefonla okutun. Google ile girişin bu adreste çalışması Clerk geliştirme ortamı ayarlarına bağlıdır.
 
 ```bash
 npm run dev       # http://localhost:5173

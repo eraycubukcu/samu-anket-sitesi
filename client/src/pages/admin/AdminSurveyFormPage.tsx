@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Copy, Eye, Plus, Trash2 } from "lucide-react";
+import { Copy, Eye, Plus, QrCode, Trash2 } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { SurveyPreviewDialog } from "@/components/admin/SurveyPreviewDialog";
+import { SurveyQrDialog } from "@/components/admin/SurveyQrDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { copySurveyLink, getSurveyLink } from "@/lib/survey-link";
 import { DIMENSION_LABELS } from "@/lib/course";
@@ -83,6 +84,7 @@ export function AdminSurveyFormPage() {
   const [questions, setQuestions] = useState<Question[]>([emptyQuestion()]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [createdSurveySlug, setCreatedSurveySlug] = useState<string | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
 
   const surveyQuery = useQuery({
     queryKey: ["admin", "survey", id],
@@ -313,12 +315,21 @@ export function AdminSurveyFormPage() {
             </Button>
           </div>
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setQrOpen(true)}>
+              <QrCode className="size-4" />
+              QR Kod Oluştur
+            </Button>
             <Button type="button" onClick={() => navigate("/admin/anketler")}>
               Tamam
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SurveyQrDialog
+        survey={qrOpen && createdSurveySlug ? { slug: createdSurveySlug, title } : null}
+        onOpenChange={setQrOpen}
+      />
 
       {isEnded && (
         <Alert variant="destructive">

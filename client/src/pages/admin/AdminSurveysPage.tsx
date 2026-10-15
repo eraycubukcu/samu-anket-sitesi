@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, BarChart3, Copy, Link2, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, BarChart3, Copy, Link2, MoreVertical, QrCode } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { formatDateTime } from "@/lib/utils";
 import { copySurveyLink } from "@/lib/survey-link";
@@ -16,10 +17,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SurveyQrDialog } from "@/components/admin/SurveyQrDialog";
 import type { Survey } from "@/types";
 
 export function AdminSurveysPage() {
   const queryClient = useQueryClient();
+  const [qrSurvey, setQrSurvey] = useState<Survey | null>(null);
 
   const surveysQuery = useQuery({
     queryKey: ["admin", "surveys"],
@@ -120,6 +123,10 @@ export function AdminSurveysPage() {
                         <Link2 className="size-4" />
                         Linki Kopyala
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setQrSurvey(survey)}>
+                        <QrCode className="size-4" />
+                        QR Kod Oluştur
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         render={<Link to={`/admin/anketler/yeni?kopyala=${survey._id}`} />}
                       >
@@ -139,6 +146,8 @@ export function AdminSurveysPage() {
           </TableBody>
         </Table>
       )}
+
+      <SurveyQrDialog survey={qrSurvey} onOpenChange={(open) => !open && setQrSurvey(null)} />
 
       {surveysQuery.data?.length === 0 && (
         <p className="text-sm text-muted-foreground">Henüz anket oluşturulmadı.</p>
