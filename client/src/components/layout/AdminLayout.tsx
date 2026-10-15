@@ -6,6 +6,7 @@ import {
   PlusCircle,
   Settings,
   BarChart3,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const navItems = [
     exclude: ["/admin/anketler/yeni"],
   },
   { to: "/admin/anketler/yeni", label: "Anket Oluştur", icon: PlusCircle, end: true },
+  { to: "/admin/dersler", label: "Dersler", icon: BookOpen, end: false },
   { to: "/admin/sonuclar", label: "Sonuçlar", icon: BarChart3, end: false },
   { to: "/admin/ayarlar", label: "Ayarlar", icon: Settings, end: true },
 ];

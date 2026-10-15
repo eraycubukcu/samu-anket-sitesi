@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Survey from "../models/Survey.js";
 import Response from "../models/Response.js";
+import Course from "../models/Course.js";
 
 // Admin isteğinden sadece izin verilen alanlar alınır (mass-assignment koruması).
 // Body'de bulunmayan alanlar sonuca dahil edilmez ki kısmi update (ör. sadece
@@ -13,6 +14,7 @@ const ALLOWED_SURVEY_FIELDS = [
   "questions",
   "isActive",
   "examDate",
+  "course",
 ];
 
 const pickSurveyFields = (body = {}) => {
@@ -22,13 +24,55 @@ const pickSurveyFields = (body = {}) => {
       result[field] = body[field];
     }
   }
+  // "Ders yok" seçimi boş string olarak gelebilir
+  if (result.course === "") result.course = null;
   return result;
+};
+
+// Anketin dersi ve soruların müfredat konuları birbiriyle tutarlı mı kontrol
+// eder. Update'te body'de olmayan alan için mevcut anketteki değer kullanılır.
+// Hata varsa mesajını döner.
+const validateCourseAndTopics = async (fields, existingSurvey) => {
+  const has = (key) => Object.prototype.hasOwnProperty.call(fields, key);
+  const courseId = has("course") ? fields.course : existingSurvey?.course ?? null;
+  const questions = has("questions") ? fields.questions : existingSurvey?.questions ?? [];
+
+  if (has("course") && fields.course !== null && typeof fields.course !== "string") {
+    return "Geçersiz ders kimliği.";
+  }
+
+  if (!Array.isArray(questions)) return null; // şema doğrulaması yakalar
+
+  const topics = questions.map((q) => q?.topic).filter((t) => t !== undefined && t !== "");
+  if (topics.some((t) => typeof t !== "string")) return "Soru konusu metin olmalıdır.";
+
+  if (!courseId) {
+    return topics.length > 0 ? "Müfredat konusu seçmek için önce anketin dersi seçilmelidir." : null;
+  }
+
+  let course;
+  try {
+    course = await Course.findById(courseId);
+  } catch {
+    return "Geçersiz ders kimliği.";
+  }
+  if (!course) return "Seçilen ders bulunamadı.";
+
+  const invalid = topics.filter((t) => !course.topics.includes(t));
+  if (invalid.length > 0) {
+    return `Şu konular seçilen dersin müfredatında yok: ${[...new Set(invalid)].join(", ")}`;
+  }
+  return null;
 };
 
 export const createSurvey = async (req, res) => {
   try {
+    const fields = pickSurveyFields(req.body);
+    const courseError = await validateCourseAndTopics(fields);
+    if (courseError) return res.status(400).json({ message: courseError });
+
     const survey = await Survey.create({
-      ...pickSurveyFields(req.body),
+      ...fields,
       createdBy: req.user._id,
     });
     res.status(201).json(survey);
@@ -44,7 +88,9 @@ export const createSurvey = async (req, res) => {
 
 export const getAllSurveys = async (req, res) => {
   try {
-    const surveys = await Survey.find().sort({ createdAt: -1 });
+    const surveys = await Survey.find()
+      .populate("course", "code name term")
+      .sort({ createdAt: -1 });
     res.json(surveys);
   } catch (error) {
     console.error(error);
@@ -123,6 +169,8 @@ export const updateSurvey = async (req, res) => {
     }
 
     const fields = pickSurveyFields(req.body);
+    const courseError = await validateCourseAndTopics(fields, existingSurvey);
+    if (courseError) return res.status(400).json({ message: courseError });
 
     const survey = await Survey.findByIdAndUpdate(req.params.id, fields, {
       new: true, // güncellenmiş halini gönderir

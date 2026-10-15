@@ -28,6 +28,10 @@ npm run lint             # oxlint
 
 There is no test suite in either project.
 
+`start.bat` (repo root) opens server, client and, once it exists, the `ml/` service in separate terminals.
+
+Planning docs: `docs/plan.md` is the roadmap (course-feedback analytics + ML service, phases 0–6). Each phase gets a spec in `docs/specs/faz-N-*.md` with acceptance criteria. Read the relevant spec before implementing a phase.
+
 Env: `server/.env` needs `MONGO_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY` (the server exits on startup if any are missing), plus `PORT`, `CLIENT_URL` (comma-separated CORS allowlist), `ADMIN_USERNAME`/`ADMIN_PASSWORD`, and optionally `TRUST_PROXY` (set only behind a real reverse proxy). `client/.env` needs `VITE_API_URL` (e.g. `http://localhost:5000/api`) and `VITE_CLERK_PUBLISHABLE_KEY`.
 
 ## Architecture
@@ -48,8 +52,14 @@ Student-facing survey links use `slug` (`/anketler/:slug` → `GET /api/surveys/
 - Mass-assignment protection: controllers copy only whitelisted fields (e.g. `ALLOWED_SURVEY_FIELDS` in `surveyController.js`). `startDate`/`endDate` are deliberately left off that list. Validate input types before using them in queries to prevent NoSQL injection.
 - Deleting a survey also deletes its responses inside a Mongo transaction, which requires a replica set (Atlas works).
 - `Response` has a unique `(survey, user)` index: one response per student per survey. Students edit their response through `PUT /api/responses/:id` (with an ownership check) while the survey window is open.
-- Error JSON uses the key `mesaj`. The client's `getErrorMessage` reads `message` or `mesaj`.
+- Error JSON uses `message` in most controllers (some older ones use `mesaj`). The client's `getErrorMessage` reads either; use `message` in new code.
 - Question types: `text`, `rating` (1–5), `radio`, `checkbox`. `radio` and `checkbox` require at least 2 non-empty options.
+
+### Courses, topics, dimensions (analytics foundation)
+- `Course` (`code` + `term` unique, `topics: [String]`) groups surveys. `Survey.course` is optional, so old surveys have none.
+- Each question can have a `topic` (must be one of its survey's course topics; checked in `validateCourseAndTopics`, `surveyController.js`) and a `dimension` (`QUESTION_DIMENSIONS` in `models/Survey.js`; client labels in `client/src/lib/course.ts`).
+- `courseController.js` blocks deleting a course that has surveys, and blocks removing a topic that questions still use.
+- `GET /api/surveys` populates `course`, while `GET /api/surveys/:id` returns it as an id. The client type `Survey["course"]` covers both.
 
 ### Client
 - Route tree is in `client/src/App.tsx`. Paths are Turkish (`/giris`, `/cevaplarim`, `/admin/anketler/:id/sonuclar`). `RequireStudent` and `RequireAdmin` are layout-route guards.

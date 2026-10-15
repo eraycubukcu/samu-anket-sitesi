@@ -2,6 +2,14 @@ import mongoose from "mongoose";
 import { computeSurveyWindow } from "../utils/surveySchedule.js";
 import { slugify, ensureUniqueSlug } from "../utils/slug.js";
 
+export const QUESTION_DIMENSIONS = [
+  "icerik",
+  "ogretim",
+  "materyal",
+  "sinav",
+  "is_yuku",
+];
+
 const questionSchema = mongoose.Schema({
   questionText: {
     type: String,
@@ -33,6 +41,18 @@ const questionSchema = mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  // Sorunun ilgili olduğu müfredat konusu (anketin dersinin topics listesinden).
+  // Eski anketler ve dersi olmayan anketler için boş kalabilir.
+  topic: {
+    type: String,
+    default: "",
+  },
+  // Sorunun ölçtüğü değerlendirme boyutu; analizde konu × boyut kırılımı için.
+  dimension: {
+    type: String,
+    enum: ["", ...QUESTION_DIMENSIONS],
+    default: "",
+  },
 });
 
 const surveySchema = mongoose.Schema(
@@ -53,6 +73,12 @@ const surveySchema = mongoose.Schema(
     description: {
       type: String,
       default: "",
+    },
+    // Opsiyonel: eski anketlerde ders bilgisi yok.
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      default: null,
     },
     questions: {
       type: [questionSchema],

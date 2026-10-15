@@ -70,6 +70,7 @@ export function AdminSurveysPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Başlık</TableHead>
+              <TableHead className="hidden md:table-cell">Ders</TableHead>
               <TableHead>Durum</TableHead>
               <TableHead className="hidden sm:table-cell">Sınav Tarihi</TableHead>
               <TableHead className="w-10" />
@@ -79,6 +80,15 @@ export function AdminSurveysPage() {
             {surveysQuery.data.map((survey) => (
               <TableRow key={survey._id}>
                 <TableCell>{survey.title}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {survey.course && typeof survey.course === "object" ? (
+                    <span title={`${survey.course.name} (${survey.course.term})`}>
+                      {survey.course.code}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <Badge variant={survey.isActive ? "success" : "destructive"}>
                     {survey.isActive ? "Aktif" : "Pasif"}

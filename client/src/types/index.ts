@@ -1,18 +1,43 @@
 export type QuestionType = "radio" | "text" | "checkbox" | "rating";
 
+export type QuestionDimension = "icerik" | "ogretim" | "materyal" | "sinav" | "is_yuku";
+
 export interface Question {
   _id?: string;
   questionText: string;
   questionType: QuestionType;
   options: string[];
   required: boolean;
+  // Müfredat konusu ve değerlendirme boyutu; boş string = seçilmedi
+  topic?: string;
+  dimension?: QuestionDimension | "";
 }
+
+export interface Course {
+  _id: string;
+  code: string;
+  name: string;
+  department: string;
+  term: string;
+  instructor: string;
+  topics: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CourseListItem extends Course {
+  surveyCount: number;
+}
+
+export type CourseRef = Pick<Course, "_id" | "code" | "name" | "term">;
 
 export interface Survey {
   _id: string;
   slug: string;
   title: string;
   description: string;
+  // Tekil getirmede id, listede populate edilmiş ders bilgisi gelir
+  course?: string | CourseRef | null;
   questions: Question[];
   isActive: boolean;
   examDate: string;

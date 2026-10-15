@@ -28,7 +28,8 @@ import {
 import { SurveyPreviewDialog } from "@/components/admin/SurveyPreviewDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { copySurveyLink, getSurveyLink } from "@/lib/survey-link";
-import type { Question, QuestionType, Survey } from "@/types";
+import { DIMENSION_LABELS } from "@/lib/course";
+import type { Course, Question, QuestionDimension, QuestionType, Survey } from "@/types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   text: "Metin",
@@ -42,7 +43,16 @@ const emptyQuestion = (): Question => ({
   questionType: "radio",
   options: ["", ""],
   required: true,
+  topic: "",
+  dimension: "",
 });
+
+// Select bileşeni boş string değeri desteklemediği için "seçilmedi" durumu
+// bu sabitle temsil edilir.
+const NONE = "__none";
+
+const getCourseId = (course: Survey["course"]) =>
+  !course ? "" : typeof course === "string" ? course : course._id;
 
 // datetime-local input değeri (ör. "2026-07-25T13:00") tarayıcının saat dilimi
 // ne olursa olsun her zaman Türkiye saati (UTC+3) olarak yorumlanır.
@@ -69,6 +79,7 @@ export function AdminSurveyFormPage() {
   const [description, setDescription] = useState("");
   const [examDateLocal, setExamDateLocal] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [courseId, setCourseId] = useState("");
   const [questions, setQuestions] = useState<Question[]>([emptyQuestion()]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [createdSurveySlug, setCreatedSurveySlug] = useState<string | null>(null);
@@ -78,6 +89,13 @@ export function AdminSurveyFormPage() {
     queryFn: async () => (await adminApi.get<Survey>(`/surveys/${id}`)).data,
     enabled: isEdit,
   });
+
+  const coursesQuery = useQuery({
+    queryKey: ["admin", "courses"],
+    queryFn: async () => (await adminApi.get<Course[]>("/courses")).data,
+  });
+
+  const selectedCourse = coursesQuery.data?.find((c) => c._id === courseId);
 
   const duplicateSourceQuery = useQuery({
     queryKey: ["admin", "survey", "duplicate-source", duplicateFromId],
@@ -93,6 +111,7 @@ export function AdminSurveyFormPage() {
     setDescription(survey.description ?? "");
     setExamDateLocal(fromIsoToLocalInput(survey.examDate));
     setIsActive(survey.isActive);
+    setCourseId(getCourseId(survey.course));
     setQuestions(
       survey.questions.length > 0 ? survey.questions : [emptyQuestion()],
     );
@@ -106,6 +125,7 @@ export function AdminSurveyFormPage() {
     // Sınav tarihi bilinçli olarak boş bırakılıyor, admin yeni tarihi girmeli.
     setExamDateLocal("");
     setIsActive(false);
+    setCourseId(getCourseId(survey.course));
     setQuestions(
       survey.questions.length > 0
         ? survey.questions.map(({ _id, ...q }) => q)
@@ -124,8 +144,11 @@ export function AdminSurveyFormPage() {
         description,
         isActive,
         examDate: toTurkeyIso(examDateLocal),
+        course: courseId || null,
         questions: questions.map((q) => ({
           ...q,
+          topic: courseId ? q.topic ?? "" : "",
+          dimension: q.dimension ?? "",
           options: q.questionType === "radio" || q.questionType === "checkbox"
             ? q.options.map((o) => o.trim()).filter(Boolean)
             : [],
@@ -157,6 +180,16 @@ export function AdminSurveyFormPage() {
   const updateQuestion = (index: number, patch: Partial<Question>) => {
     setQuestions((prev) =>
       prev.map((q, i) => (i === index ? { ...q, ...patch } : q)),
+    );
+  };
+
+  // Ders değişince, yeni dersin müfredatında olmayan soru konuları temizlenir.
+  const handleCourseChange = (value: string | null) => {
+    const nextId = !value || value === NONE ? "" : value;
+    const nextTopics = coursesQuery.data?.find((c) => c._id === nextId)?.topics ?? [];
+    setCourseId(nextId);
+    setQuestions((prev) =>
+      prev.map((q) => (q.topic && !nextTopics.includes(q.topic) ? { ...q, topic: "" } : q)),
     );
   };
 
@@ -339,6 +372,34 @@ export function AdminSurveyFormPage() {
                 (Türkiye saatiyle) 23:59'unda kapanır.
               </p>
             </div>
+            <div className="space-y-2">
+              <Label>Ders</Label>
+              <Select value={courseId || NONE} onValueChange={handleCourseChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {(value: string | null) => {
+                      if (!value || value === NONE) return "Ders yok";
+                      const course = coursesQuery.data?.find((c) => c._id === value);
+                      return course
+                        ? `${course.code} - ${course.name} (${course.term})`
+                        : "Yükleniyor...";
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>Ders yok</SelectItem>
+                  {coursesQuery.data?.map((course) => (
+                    <SelectItem key={course._id} value={course._id}>
+                      {course.code} - {course.name} ({course.term})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Ders seçilirse sorular dersin müfredat konularına bağlanabilir ve
+                sonuçlar ders bazında analiz edilir.
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <Checkbox
                 id="isActive"
@@ -412,6 +473,66 @@ export function AdminSurveyFormPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {selectedCourse && (
+                    <div className="space-y-2">
+                      <Label>Müfredat Konusu</Label>
+                      <Select
+                        value={question.topic || NONE}
+                        onValueChange={(value: string | null) =>
+                          updateQuestion(qIndex, { topic: !value || value === NONE ? "" : value })
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue>
+                            {(value: string | null) =>
+                              !value || value === NONE ? "Konu seçilmedi" : value
+                            }
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={NONE}>Konu seçilmedi</SelectItem>
+                          {selectedCourse.topics.map((topic) => (
+                            <SelectItem key={topic} value={topic}>
+                              {topic}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label>Değerlendirme Boyutu</Label>
+                    <Select
+                      value={question.dimension || NONE}
+                      onValueChange={(value: string | null) =>
+                        updateQuestion(qIndex, {
+                          dimension:
+                            !value || value === NONE ? "" : (value as QuestionDimension),
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue>
+                          {(value: string | null) =>
+                            !value || value === NONE
+                              ? "Boyut seçilmedi"
+                              : DIMENSION_LABELS[value as QuestionDimension]
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NONE}>Boyut seçilmedi</SelectItem>
+                        {Object.entries(DIMENSION_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {(question.questionType === "radio" ||
