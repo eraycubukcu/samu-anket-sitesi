@@ -13,3 +13,8 @@ Thumbs.db
 #Build çıktıları
 dist/
 build/
+#Python (ml servisi)
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
