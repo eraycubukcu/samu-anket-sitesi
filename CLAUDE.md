@@ -44,7 +44,7 @@ There is no test suite in either project.
 
 Planning docs: `docs/plan.md` is the roadmap (course-feedback analytics + ML service, phases 0–6). Each phase gets a spec in `docs/specs/faz-N-*.md` with acceptance criteria. Read the relevant spec before implementing a phase.
 
-Env: `server/.env` needs `MONGO_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY` (the server exits on startup if any are missing), plus `PORT`, `CLIENT_URL` (comma-separated CORS allowlist), `ADMIN_USERNAME`/`ADMIN_PASSWORD`, and optionally `TRUST_PROXY` (set only behind a real reverse proxy). `client/.env` needs `VITE_API_URL` (e.g. `http://localhost:5000/api`) and `VITE_CLERK_PUBLISHABLE_KEY`.
+Env: `server/.env` needs `MONGO_URI`, `JWT_SECRET`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY` (the server exits on startup if any are missing), plus `PORT`, `CLIENT_URL` (comma-separated CORS allowlist), `ML_SERVICE_URL` + `ML_SERVICE_TOKEN` (optional; without them only the analysis endpoints return 503), `ADMIN_USERNAME`/`ADMIN_PASSWORD`, and optionally `TRUST_PROXY` (set only behind a real reverse proxy). `client/.env` needs `VITE_API_URL` (e.g. `http://localhost:5000/api`) and `VITE_CLERK_PUBLISHABLE_KEY`.
 
 ## Architecture
 
@@ -80,6 +80,11 @@ Student-facing survey links use `slug` (`/anketler/:slug` → `GET /api/surveys/
 - Project skill `.claude/skills/demo-veri-yenile` covers the regenerate-and-seed flow. After regenerating data, retrain (`python -m app.train`) and reseed, so the DB, the models and `reports/model_raporu.md` all come from the same dataset.
 - `/analyze` contract and the rules for how questions are interpreted: `docs/specs/faz-3-ml-servisi.md`. `app/pipeline/builder.py` turns the request into `TermData`/`TopicUnit`. A question is used by its `type` + `topic` + `dimension`, never by its text. Example: a difficulty question must be a `radio` with dimension `sinav`, no topic, and exactly 5 options.
 - Decision explanations use local perturbation (each feature is replaced by the training median). `n_responses` is a model input but is never shown as a reason. `MIN_RESPONSES = 5` (KVKK): below it, `/analyze` returns only `insufficient_data`.
+
+### Analysis integration (Node → ML)
+- `/api/analysis` (`analysisController.js`): `POST /courses/:id` builds the payload, calls ML, and upserts one `AnalysisReport` per course. `GET /courses/:id` returns the stored report with `stale` (the `computeFingerprint` value changed since the run). `GET /summary` returns the latest decision per course.
+- `services/analysisPayload.js`: previous terms are other `Course` docs with the same `code`, ordered by their surveys' earliest `examDate` (term names are never parsed). Benchmarks are computed with a Mongo aggregation (`computeBenchmarks`), so other courses' responses are never pulled into Node. Respondents are sent as `HMAC(userId, JWT_SECRET)`. Keep the number of DB round trips and the amount of data pulled low: Atlas latency and transfer, not ML, dominate analysis time.
+- `services/mlClient.js` maps ML failures: unreachable → 503, ML 401 → 502 (token mismatch), ML 503 → 503 with ML's message.
 
 ### Client
 - Route tree is in `client/src/App.tsx`. Paths are Turkish (`/giris`, `/cevaplarim`, `/admin/anketler/:id/sonuclar`). `RequireStudent` and `RequireAdmin` are layout-route guards.

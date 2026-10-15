@@ -1,5 +1,6 @@
 import Course from "../models/Course.js";
 import Survey from "../models/Survey.js";
+import AnalysisReport from "../models/AnalysisReport.js";
 
 const ALLOWED_COURSE_FIELDS = [
   "code",
@@ -143,6 +144,7 @@ export const deleteCourse = async (req, res) => {
     }
 
     await course.deleteOne();
+    await AnalysisReport.deleteOne({ course: course._id });
     res.json(course);
   } catch (error) {
     console.error(error);

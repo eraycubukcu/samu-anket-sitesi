@@ -8,6 +8,7 @@ import surveyRoute from "./routes/surveyRoute.js";
 import responseRoute from "./routes/responseRoute.js";
 import adminRoute from "./routes/adminRoute.js";
 import courseRoute from "./routes/courseRoute.js";
+import analysisRoute from "./routes/analysisRoute.js";
 import { clerkAuth } from "./middlewares/auth.js";
 
 dotenv.config();
@@ -81,6 +82,7 @@ app.use("/api/surveys", surveyRoute);
 app.use("/api/responses", responseRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/courses", courseRoute);
+app.use("/api/analysis", analysisRoute);
 
 // Bilinmeyen route
 app.use((req, res) => {
