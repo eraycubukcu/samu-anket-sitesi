@@ -42,7 +42,7 @@ const validateAnswer = (question, answerValue) => {
 
 // Cevap listesinin formatını ve ankete uygunluğunu kontrol eder.
 // submitResponse ve updateResponse arasında ortak kullanılır.
-const validateAnswersAgainstSurvey = (survey, answers) => {
+export const validateAnswersAgainstSurvey = (survey, answers) => {
   if (!Array.isArray(answers) || answers.length === 0) {
     return "Cevaplar gerekli.";
   }

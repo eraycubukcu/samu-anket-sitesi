@@ -19,11 +19,17 @@ npm run dev              # nodemon
 npm start
 npm run seed             # one-time: create the admin user from ADMIN_USERNAME/ADMIN_PASSWORD
 npm run backfill-slugs   # one-time: generate slugs for surveys created before the slug field existed
+npm run seed-demo        # load ml/data/generated/demo_dataset.json into Mongo (replaces isDemo records only)
+npm run seed-demo -- --clean   # remove demo records only
 
 # client/
 npm run dev              # http://localhost:5173
 npm run build            # tsc -b && vite build (this is the type check)
 npm run lint             # oxlint
+
+# ml/  (Python 3.12, venv in ml/.venv)
+py -3.12 -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt
+.venv/Scripts/python data/generate_synthetic.py --seed 42   # deterministic synthetic data -> ml/data/generated/ (gitignored)
 ```
 
 There is no test suite in either project.
@@ -60,6 +66,12 @@ Student-facing survey links use `slug` (`/anketler/:slug` → `GET /api/surveys/
 - Each question can have a `topic` (must be one of its survey's course topics; checked in `validateCourseAndTopics`, `surveyController.js`) and a `dimension` (`QUESTION_DIMENSIONS` in `models/Survey.js`; client labels in `client/src/lib/course.ts`).
 - `courseController.js` blocks deleting a course that has surveys, and blocks removing a topic that questions still use.
 - `GET /api/surveys` populates `course`, while `GET /api/surveys/:id` returns it as an id. The client type `Survey["course"]` covers both.
+
+### Synthetic data and the ML service (`ml/`)
+- `ml/data/generate_synthetic.py` is the single source of truth for demo data. It simulates hidden ("latent") quality per course × term × topic × dimension, and derives labels from that hidden quality (plus 8% noise), never from the observed ratings. It outputs the demo dataset JSON and the training CSVs.
+- `server/scripts/seedDemoData.js` writes straight to the collections (bypassing Mongoose, so the extra `isDemo: true` field is kept), so it computes `startDate`/`endDate`/`slug` itself. Every demo response is checked with `validateAnswersAgainstSurvey` (exported from `responseController.js`) before anything is deleted.
+- `ml/app/pipeline/features.py` computes model features for a topic (`TopicUnit` → `compute_features`). Training data and live analysis must both go through it. Comments are linked to topics by name match (`attribute_comment`).
+- Project skill `.claude/skills/demo-veri-yenile` covers the regenerate-and-seed flow.
 
 ### Client
 - Route tree is in `client/src/App.tsx`. Paths are Turkish (`/giris`, `/cevaplarim`, `/admin/anketler/:id/sonuclar`). `RequireStudent` and `RequireAdmin` are layout-route guards.
