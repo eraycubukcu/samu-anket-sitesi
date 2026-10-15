@@ -16,6 +16,7 @@ import { AdminSurveyResultsPage } from "@/pages/admin/AdminSurveyResultsPage";
 import { AdminResultsListPage } from "@/pages/admin/AdminResultsListPage";
 import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { AdminCoursesPage } from "@/pages/admin/AdminCoursesPage";
+import { AdminCourseAnalysisPage } from "@/pages/admin/AdminCourseAnalysisPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
           <Route path="anketler/:id/sonuclar" element={<AdminSurveyResultsPage />} />
           <Route path="sonuclar" element={<AdminResultsListPage />} />
           <Route path="dersler" element={<AdminCoursesPage />} />
+          <Route path="dersler/:id/analiz" element={<AdminCourseAnalysisPage />} />
           <Route path="ayarlar" element={<AdminSettingsPage />} />
         </Route>
       </Route>

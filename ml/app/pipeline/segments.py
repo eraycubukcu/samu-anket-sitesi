@@ -11,9 +11,15 @@ from app.config import RANDOM_STATE
 from app.pipeline.preprocess import tr_capitalize
 
 MIN_RESPONDENTS = 10
-K_RANGE = range(2, 5)
+# En fazla 3 segment: dağılım grafiğinde renk körlüğüne dayanıklı 3 kategorik renk var
+K_RANGE = range(2, 4)
 # Grup ortalaması genel ortalamadan bu kadar saparsa isimlendirmede dikkate alınır
 NAME_THRESHOLD = 0.25
+# "Genel olarak" adı için tüm grupların aynı yönde en az bu kadar sapması yeterli
+OVERALL_THRESHOLD = 0.15
+# Mutlak puan eşikleri: göreli olarak "daha iyi" olan grup gerçekten memnun mu?
+SATISFIED = 3.5
+STRUGGLING = 3.0
 
 DIMENSION_LABELS = {
     "icerik": "ders içeriği",
@@ -42,18 +48,26 @@ def _complaint(key: str) -> str:
     return "zorlananlar" if key.startswith("konu:") else "memnuniyetsiz olanlar"
 
 
-def _name_cluster(deviations: dict[str, float]) -> str:
+def _name_cluster(deviations: dict[str, float], profile: dict[str, float]) -> str:
+    """Segmenti, genel ortalamadan en çok ayrıştığı gruba göre adlandırır.
+
+    Göreli fark yönü seçer, mutlak puan kelimeyi seçer: ortalaması 2.8 olan bir
+    grup diğerinden iyi olsa bile "memnun" değil "görece olumlu" adlandırılır.
+    """
     values = list(deviations.values())
-    if all(v > NAME_THRESHOLD for v in values):
-        return "Genel olarak memnun"
-    if all(v < -NAME_THRESHOLD for v in values):
-        return "Genel olarak memnuniyetsiz"
+    if all(v > OVERALL_THRESHOLD for v in values):
+        return "Genel olarak daha memnun"
+    if all(v < -OVERALL_THRESHOLD for v in values):
+        return "Genel olarak daha memnuniyetsiz"
     worst_key = min(deviations, key=deviations.get)
     if deviations[worst_key] < -NAME_THRESHOLD:
-        return tr_capitalize(f"{_group_label(worst_key)} {_complaint(worst_key)}")
+        if profile[worst_key] < STRUGGLING:
+            return tr_capitalize(f"{_group_label(worst_key)} {_complaint(worst_key)}")
+        return tr_capitalize(f"{_group_label(worst_key)} görece eleştirel olanlar")
     best_key = max(deviations, key=deviations.get)
     if deviations[best_key] > NAME_THRESHOLD:
-        return tr_capitalize(f"{_group_label(best_key)} memnun")
+        word = "memnun olanlar" if profile[best_key] >= SATISFIED else "görece olumlu olanlar"
+        return tr_capitalize(f"{_group_label(best_key)} {word}")
     return "Ortalama görüşte"
 
 
@@ -89,7 +103,7 @@ def segment_students(matrix: np.ndarray | None, columns: list[tuple[str, str]]) 
     for cid in range(k):
         members = X[model.labels_ == cid]
         profile = {g: round(float(members[:, idx].mean()), 2) for g, idx in groups.items()}
-        name = _name_cluster({g: profile[g] - overall[g] for g in groups})
+        name = _name_cluster({g: profile[g] - overall[g] for g in groups}, profile)
         used_names[name] = used_names.get(name, 0) + 1
         if used_names[name] > 1:
             name = f"{name} ({used_names[name]})"

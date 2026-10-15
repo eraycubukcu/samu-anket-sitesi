@@ -25,7 +25,7 @@ ml/app/
     builder.py     istek payload'u -> TopicUnit'ler ve öğrenci vektörleri
     sentiment.py   TF-IDF (kelime + karakter n-gram) + LogisticRegression
     themes.py      TF-IDF + NMF
-    segments.py    KMeans (k = silhouette ile 2–4) + PCA
+    segments.py    KMeans (k = silhouette ile 2–3) + PCA
     decision.py    RandomForest vs LogisticRegression, yerel açıklama
     trend.py       Mann-Whitney U, z-skor anomali
 ```

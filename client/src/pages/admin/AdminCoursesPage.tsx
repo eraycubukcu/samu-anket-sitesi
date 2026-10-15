@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MoreVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { MoreVertical, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { adminApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DecisionBadge } from "@/components/analysis/DecisionBadge";
 import type { Course, CourseListItem } from "@/types";
+import type { AnalysisSummaryItem } from "@/types/analysis";
 
 interface CourseFormState {
   code: string;
@@ -68,6 +71,12 @@ export function AdminCoursesPage() {
     queryKey: ["admin", "courses"],
     queryFn: async () => (await adminApi.get<CourseListItem[]>("/courses")).data,
   });
+
+  const summaryQuery = useQuery({
+    queryKey: ["admin", "analysis-summary"],
+    queryFn: async () => (await adminApi.get<AnalysisSummaryItem[]>("/analysis/summary")).data,
+  });
+  const summaryByCourse = new Map(summaryQuery.data?.map((s) => [s.course, s]));
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -239,6 +248,7 @@ export function AdminCoursesPage() {
               <TableHead className="hidden md:table-cell">Öğretim Üyesi</TableHead>
               <TableHead className="hidden sm:table-cell">Konu</TableHead>
               <TableHead className="hidden sm:table-cell">Anket</TableHead>
+              <TableHead className="hidden lg:table-cell">Son analiz</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -257,6 +267,15 @@ export function AdminCoursesPage() {
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">{course.topics.length}</TableCell>
                 <TableCell className="hidden sm:table-cell">{course.surveyCount}</TableCell>
+                <TableCell className="hidden lg:table-cell">
+                  {(() => {
+                    const summary = summaryByCourse.get(course._id);
+                    if (!summary) return <span className="text-muted-foreground">—</span>;
+                    if (!summary.decision)
+                      return <span className="text-xs text-muted-foreground">Yetersiz veri</span>;
+                    return <DecisionBadge decision={summary.decision} />;
+                  })()}
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
@@ -264,6 +283,10 @@ export function AdminCoursesPage() {
                       <span className="sr-only">İşlemler</span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem render={<Link to={`/admin/dersler/${course._id}/analiz`} />}>
+                        <Sparkles className="size-4" />
+                        Analiz
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEdit(course)}>
                         <Pencil className="size-4" />
                         Düzenle
